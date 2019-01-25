@@ -30,9 +30,9 @@ def AssembleDf(input_df):
     df : pandas dataframe
         Input dataframe modified with additional Series calculated from the input dataframe
     """
-    
+
     df = input_df.copy()
-    df = df.dropna()
+    #df = df.dropna()
     df = AddTypeName(df)
 
     df = df.assign(O2_binding_energy = (df['CatalystO2_Energy'] - df['Catalyst_Energy'] - O2_31gp)*Ht2eV) #O2 binding energy
@@ -45,6 +45,29 @@ def AssembleDf(input_df):
 
     return df
 
+def AddEnergyDiffs(input_df, energy_columns, diff_names):
+    """Take the difference between the energy of the bare catalyst and a list of other energies in the dataframe
+    Parameters:
+    -----------
+    input_df: pandas dataframe
+        must contain a column labeled 'Catalyst_Energy', and columns named for each of the energy columns
+    energy_columns: list
+        the names for each column to take as the difference from 'Catalyst_Energy'
+    diff_names: list
+        the name for the new columns that are added, which are the energy differences
+    """
+
+    #for i, column_name in enumerate(energy_columns):
+    #    df = df.assign(diff_name[i] = (df[column_name] - df['Catalyst_Energy'])*Ht2eV)
+
+    df = input_df.copy()
+    print(df.shape)
+    df = df.assign(O2H_diff = (df['CatalystOOH_Energy'] - df['Catalyst_Energy'])*Ht2eV)
+    df = df.assign(O_diff = (df['CatalystO_Energy'] - df['Catalyst_Energy'])*Ht2eV)
+    df = df.assign(OH_diff = (df['CatalystOH_Energy'] - df['Catalyst_Energy'])*Ht2eV)
+
+
+    return df
 
 def CleanDf(input_df, active_sites=None, O2_bl=None, active_site_id=None, O2_binding=None):
     """Removes entries that are outside particular parameters
@@ -85,7 +108,7 @@ def CleanDf(input_df, active_sites=None, O2_bl=None, active_site_id=None, O2_bin
 
         df = df[df['Cat-O2_Bond_Length'] > O2_bl[0]]
         df = df[df['Cat-O2_Bond_Length'] < O2_bl[1]]
-            
+
     return df
 
 def AddCatTag(input_df, split_str='-', tag_series_name='Catalyst_File_Name'):
@@ -139,7 +162,7 @@ def AddTypeName(df):
     df = df.assign(Tag = tag_list)
     df = df.assign(Catalyst_Type = cat_type_list)
     return df
-        
+
 def AssignSubsts(df, func_file):
     cat_tag_list = []
     subst_list_1, subst_list_2 = [], []
@@ -182,14 +205,3 @@ def SaveAssembledSubsts(df_csv, func_infile, outfile):
     df = CRT.CatO2Df.AssembleDf(df)
     df = CRT.CatO2Df.AssignSubsts(df, func_infile)
     df.to_csv(outfile)
-
-
-
-
-
-
-
-
-
-
-
