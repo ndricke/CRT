@@ -150,15 +150,31 @@ def AddCatTag(input_df, split_str='-', tag_series_name='Catalyst_File_Name'):
     return df
 
 def AddTypeName(df):
+    """ Add the type of catalyst (tetry, tetrid, mepyr) as a new column to pandas dataframe"""
     cat_type_list = []
     tag_list = []
     for name in df['Catalyst_File_Name']:
         #name_split = name.split('-')
         #tag_list.append(int(name_split[1].split('_')[0][4:]))
-        name_split = name.split('_')
-        tag_list.append(int(name_split[1][4:]))
+
+        ds_ind = name.find('-')
+        und_ind = name.find('_')
+        if ds_ind < und_ind and ds_ind > 0:
+            spl_char = '-'
+        else:
+            spl_char = '_'
+
+        name_split = name.split(spl_char)
         cat_type_list.append(name_split[0])
 
+        ## Find the number after func
+        match = re.search('func(\d+)', name)
+        if match:
+            #print(match.group(1))
+            tag_list.append(int(match.group(1)))
+        #tag_list.append(int(name_split[1][4:]))
+
+    print(cat_type_list)
     df = df.assign(Tag = tag_list)
     df = df.assign(Catalyst_Type = cat_type_list)
     return df
@@ -202,6 +218,6 @@ def AssignSubsts(df, func_file):
 
 def SaveAssembledSubsts(df_csv, func_infile, outfile):
     df = pd.DataFrame.from_csv(df_csv)
-    df = CRT.CatO2Df.AssembleDf(df)
-    df = CRT.CatO2Df.AssignSubsts(df, func_infile)
+    df = AssembleDf(df)
+    df = AssignSubsts(df, func_infile)
     df.to_csv(outfile)
