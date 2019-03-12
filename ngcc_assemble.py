@@ -22,6 +22,19 @@ df_tetry = CatO2Df.AssignSubsts(df_tetry, "/home/nricke/work/autoq/order_funcs/c
 df_tetry.to_csv("order_tetryEnum_assembled.csv")
 """
 
+df_tetry = pd.read_csv('order_tetryAS.csv')
+df_tetry = CatO2Df.AssembleDf(df_tetry)
+df_tetry = CatO2Df.AssignSubsts(df_tetry, "/home/nricke/work/autoq/order_funcs/catfunc_list/tetry_AS.txt")
+
+df_tetry.to_csv("order_tetryAS_assembled.csv")
+
+df_tetrid = pd.read_csv('order_tetridAS.csv')
+df_tetrid = CatO2Df.AssembleDf(df_tetrid)
+df_tetrid = CatO2Df.AssignSubsts(df_tetrid, "/home/nricke/work/autoq/order_funcs/catfunc_list/tetrid_AS.txt")
+df_tetrid.to_csv("order_tetridAS_assembled.csv")
+
+
+
 """
 CatO2Df.SaveAssembledSubsts('/home/nricke/work/CRT/autoq/order_tetrid1.csv', \
                     '/home/nricke/work/autoq/order_funcs/catfunc_list/tetrid_1.txt', \

@@ -45,7 +45,7 @@ def AssembleDf(input_df):
 
     return df
 
-def AddEnergyDiffs(input_df, energy_columns, diff_names):
+def AddEnergyDiffs(input_df, energy_columns, diff_names, shift=[0.,0.,0.]):
     """Take the difference between the energy of the bare catalyst and a list of other energies in the dataframe
     Parameters:
     -----------
@@ -62,12 +62,11 @@ def AddEnergyDiffs(input_df, energy_columns, diff_names):
 
     df = input_df.copy()
     print(df.shape)
-    df = df.assign(O2H_diff = (df['CatalystOOH_Energy'] - df['Catalyst_Energy'])*Ht2eV)
-    df = df.assign(O_diff = (df['CatalystO_Energy'] - df['Catalyst_Energy'])*Ht2eV)
-    df = df.assign(OH_diff = (df['CatalystOH_Energy'] - df['Catalyst_Energy'])*Ht2eV)
-
-
+    df = df.assign(O2H_diff = (df['CatalystOOH_Energy'] - df['Catalyst_Energy'] - shift[0])*Ht2eV)
+    df = df.assign(O_diff = (df['CatalystO_Energy'] - df['Catalyst_Energy'] - shift[1])*Ht2eV)
+    df = df.assign(OH_diff = (df['CatalystOH_Energy'] - df['Catalyst_Energy'] - shift[2])*Ht2eV)
     return df
+
 
 def CleanDf(input_df, active_sites=None, O2_bl=None, active_site_id=None, O2_binding=None):
     """Removes entries that are outside particular parameters
