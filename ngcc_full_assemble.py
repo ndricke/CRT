@@ -64,18 +64,18 @@ df_ty_20 = CatO2Df.AddEnergyDiffs(df_ty_20, energy_names, diff_names, ty20_shift
 #print(df_tr_shift[["Tag", "OH_diff"]])
 
 catalyst_dict = {"mepyr":[df_m], "tetry":[df_ty_17, df_ty_20], "tetrid":[df_tr], "all":[df_m, df_tr, df_ty_17, df_ty_20]}
-#df = pd.concat(catalyst_dict[catalyst], sort=True)
-df_name_list = ["mepyr_cycle.csv", "tetrid_cycle.csv", "tetry17_cycle.csv", "tetry20_cycle.csv"]
+df = pd.concat(catalyst_dict[catalyst], sort=True)
 
-for i, df in enumerate(catalyst_dict[catalyst]):
-    df = df.drop("Unnamed: 0", 1)
-    df = df.drop("Unnamed: 0.1", 1)
-    df = df[df["Cat-O2_Bond_Length"] < 1.7]
-    df = df[df["Cat-O2_Bond_Length"] > 1.3]
+#df_name_list = ["mepyr_cycle.csv", "tetrid_cycle.csv", "tetry17_cycle.csv", "tetry20_cycle.csv"]
+#for i, df in enumerate(catalyst_dict[catalyst]):
+#    df = df.drop("Unnamed: 0", 1)
+#    df = df.drop("Unnamed: 0.1", 1)
+#    df = df[df["Cat-O2_Bond_Length"] < 1.7]
+#    df = df[df["Cat-O2_Bond_Length"] > 1.3]
     #df = df.drop("Unnamed: 0.1.1", 1)
     #df = df.drop("Unopt_Cat-O2_Energy", 1)
-    df.to_csv(df_name_list[i], index=False)
+    #df.to_csv(df_name_list[i], index=False)
 
 ## This dataframe appears to have duplicates in tetrid, and they aren't all the same format
 ## This may or may not fix the issue of energies being super off from the bare catalyst
-#df.to_csv("gcc_assembled.csv", index=False)
+df.to_csv("gcc_assembled.csv", index=False)
