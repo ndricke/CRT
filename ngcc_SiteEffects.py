@@ -19,10 +19,10 @@ font = {'size':14}
 mpl.rc('font',**font)
 rcParams['figure.figsize'] = 10,6
 
-#catalyst = "mepyr"
+catalyst = "mepyr"
 #catalyst = "tetry17"
 #catalyst = "tetry20"
-catalyst = "tetrid"
+#catalyst = "tetrid"
 intermediate = "O2"
 
 csv_dict = {"mepyr":"mepyr_cycle.csv", "tetrid":"tetrid_cycle.csv", "tetry17":"tetry17_cycle.csv", "tetry20":"tetry20_cycle.csv"}
@@ -46,7 +46,7 @@ cat_funcsite_dict = {"mepyr":[18,19,24], "tetry17":[14,27,28,31,32,33,34,35], "t
 #cat_funcsite_dict = {"mepyr":[18,19,24], "tetry17":[14,27,28,31,32,33,34,35], "tetry20":[14,27,28,31,32,33,34,35], "tetrid":[30,31,34,35,36,37]}
 
 func_labels =['CHO', r'OCH$_3$', r'CH$_2$NH$_2$', r'CF$_3$', r'CH$_3$', r'NH$_2$', 'OH', 'F', 'Cl', 'Br', 'CN']
-size_scale = 10000
+size_scale = 100000
 active_site = AS_dict[catalyst]
 
 #df = pd.read_csv("gcc_assembled.csv")
@@ -107,14 +107,17 @@ cat_atom_inds = [i for i in range(len(atoms)) if i not in func_sites+tail]
 shift_list = []
 interm_num = len(diff_dict.keys())
 
-for site in df_subs:
+for site in df_subs: #for unique site location
     #shift_list.append(np.mean(np.abs(df[df.Sub_1 == site][diff_interm])))
 
     partial_shift = 0.
-    for diff_interm in diff_dict:
-        partial_shift += np.mean(np.abs(df[df.Sub_1 == site][diff_dict[diff_interm]]))
+    ## Sum contribution from all func groups across intermediates at each site
+    for diff_interm in diff_dict: #for each intermediate [O2, O2H, OH, O2]
+        #partial_shift += np.mean(np.abs(df[df.Sub_1 == site][diff_dict[diff_interm]]))
+        partial_shift += np.mean((df[df.Sub_1 == site][diff_dict[diff_interm]])**2) #func effect squared
     shift_list.append(partial_shift/interm_num)
 sitefunc_shifts = np.array(shift_list)
+
 
 # Do I just directly PCA the FuncGroup-Site array?
 #pca = PCA(n_components=1)
@@ -173,10 +176,10 @@ for i,ind in enumerate(cat_atom_inds):
 
 for i,ind in enumerate(func_sites):
     if ind == active_site:
-        ax.scatter(coords[ind,0], coords[ind,1],coords[ind,2],s=np.abs(sitefunc_shifts[i])*size_scale, \
-                   c='purple',marker=shift_marks[i] )
+        ax.scatter(coords[ind,0], coords[ind,1],coords[ind,2],s=(sitefunc_shifts[i])*size_scale, \
+                   c='purple',marker='*' )
     else:
-        ax.scatter(coords[ind,0], coords[ind,1],coords[ind,2],s=np.abs(sitefunc_shifts[i])*size_scale, \
+        ax.scatter(coords[ind,0], coords[ind,1],coords[ind,2],s=(sitefunc_shifts[i])*size_scale, \
                    c=shift_colors[i],marker=shift_marks[i] )
 
 for bond in bonds:
