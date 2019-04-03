@@ -11,13 +11,16 @@ import seaborn as sns
 from sklearn.decomposition import PCA
 
 
+from rotate import rotate2D
 from autoq import ChemData as CD
 import CatO2Df
 from pylab import rcParams
 
+
+
 font = {'size':14}
 mpl.rc('font',**font)
-rcParams['figure.figsize'] = 10,6
+rcParams['figure.figsize'] = 14,14
 
 #catalyst = "mepyr"
 #catalyst = "tetry17"
@@ -31,8 +34,9 @@ energy_dict = {"tetry17":-0.4793, "tetry20":-0.4793, "tetrid":-0.626, "mepyr":-0
 tail_dict = {"mepyr":list(range(2,6))+list(range(10,14)), "tetry17":list(range(18,26)), "tetry20":list(range(18,26)), "tetrid":list(range(21,29))}
 ## blend tails (0-index):
 blend_dict = {"mepyr":[[2,1],[5,6]], "tetry17":[[18,4], [21,3]], "tetry20":[[18,4], [21,3]], "tetrid":[[21,4], [24,3]]}
-xyz_dict = {"mepyr":"xyz/mepyr_optsp_a0m2.xyz", "tetry17":"xyz/tetry_optsp_a0m2.xyz", "tetry20":"xyz/tetry_optsp_a0m2.xyz", "tetrid":"xyz/tetrid_optsp_a0m2.xyz"}
+xyz_dict = {"mepyr":"xyz/mepyr_optsp_xy_a0m2.xyz", "tetry17":"xyz/tetry_optsp_xy_a0m2.xyz", "tetry20":"xyz/tetry_optsp_xy_a0m2.xyz", "tetrid":"xyz/tetrid_optsp_xy_a0m2.xyz"}
 AS_dict = {"mepyr":18, "tetry17":31, "tetry20":33, "tetrid":38}
+marker_dict = {1:"v", -1:"D"}
 
 ## Including Br, Cl, and tetrid AS 38
 #func_dict ={'C=O':0, 'OC':1, 'methylamine':2, 'trifluoromethyl':3, 'C':4, 'N':5, 'O':6, 'F':7, 'Cl':8, 'Br':9, 'cyanide':10}
@@ -49,6 +53,7 @@ size_scale = 1000
 active_site = AS_dict[catalyst]
 print(active_site)
 pca_n = 3
+color_list = ['green', 'magenta', 'goldenrod']
 
 data_dir = "/home/nricke/work/CRT/autoq/"
 
@@ -116,7 +121,7 @@ u, s, vh = np.linalg.svd(fg_array)
 #print("u: ", u.shape)
 #print(u)
 #print()
-#print("s: ", s)
+print("s: ", s)
 #print("vh: ", vh.shape)
 #print(vh)
 
@@ -128,8 +133,12 @@ u, s, vh = np.linalg.svd(fg_array)
 
 vh_s = vh[:6,:] # taking non-zero singular values
 vh_s = vh_s[:pca_n, :] # taking 2 largest singular values
+print("vh_s:")
+print(vh_s)
 xvhs = np.dot(fg_array, vh_s.T) # principle components projected onto fg_array
 print(xvhs)
+for i in range(pca_n):
+    print("PCA component %s:" %i, np.linalg.norm(xvhs[:,i]))
 
 #C = np.dot(fg_array.T, fg_array)
 #e, v = np.linalg.eigh(C)
@@ -141,6 +150,7 @@ print(xvhs)
 #plt.plot(np.cumsum(pca.explained_variance_ratio_))
 #plt.show()
 
+sys.exit(-1)
 
 ## Heatmap, mapped onto molecular coordinates
 # load catalyst geometry
@@ -166,46 +176,51 @@ for i in cat_atom_inds:
         a_atom_color.append(atom_dict[atoms[i]])
 
 
-
 fig = plt.figure()
-ax = fig.add_subplot(111, projection='3d')
-for i,ind in enumerate(cat_atom_inds):
-    ax.scatter(coords[ind,0], coords[ind,1],coords[ind,2],s=1000, \
-               c=a_atom_color[i],marker="o")
+ax = fig.add_subplot(111)
+#ax = fig.add_subplot(111, projection='3d')
 
 for bond in bonds:
     r1 = coords[bond[0],:]
     r2 = coords[bond[1],:]
-    plt.plot([r1[0], r2[0]], [r1[1],r2[1]], [r1[2],r2[2]], '-', color='k', lw=6, zorder=1)
+    #plt.plot([r1[0], r2[0]], [r1[1],r2[1]], [r1[2],r2[2]], '-', color='k', lw=6, zorder=1)
+    plt.plot([r1[0], r2[0]], [r1[1],r2[1]], '-', color='k', lw=6, zorder=1)
 
 blend_bonds = blend_dict[catalyst]
 for bond in blend_bonds:
     r1 = coords[bond[0],:]
     r2 = coords[bond[1],:]
-    plt.plot([r1[0], r2[0]], [r1[1],r2[1]], [r1[2],r2[2]], '--', color='k', lw=6, zorder=1)
+    #plt.plot([r1[0], r2[0]], [r1[1],r2[1]], [r1[2],r2[2]], '--', color='k', lw=6, zorder=1)
+    plt.plot([r1[0], r2[0]], [r1[1],r2[1]], '--', color='k', lw=6, zorder=1)
 
-def rotate(vec, theta):
-    R = np.zeros((3,3))
-    R[2,2] = 1
-    R[:2,:2] = [[np.cos(theta), -np.sin(theta)],[np.sin(theta), np.cos(theta)]]
-    return np.dot(R, vec)
+for i,ind in enumerate(cat_atom_inds):
+    #ax.scatter(coords[ind,0], coords[ind,1],coords[ind,2],s=1000, \
+    #           c=a_atom_color[i],marker="o")
+    ax.scatter(coords[ind,0], coords[ind,1], s=1000, \
+               c=a_atom_color[i], marker="o", zorder=2)
 
 
-v1 = np.array([0.3,0,0]).T
-shift = np.zeros((pca_n, 3))
+
+#v1 = np.array([0.3,0,0]).T
+v1 = np.array([0.2,0.]).T
+#shift = np.zeros((pca_n, 3))
+shift = np.zeros((pca_n, 2))
 #shift[0,:] = v1
 for i in range(pca_n):
-    shift[i,:] = rotate(v1, i*(360/pca_n)).T
+    shift[i,:] = rotate2D(v1, i*(2*np.pi/pca_n)).T
 
 # Plot all the aggregate functional group effects
 for i,ind in enumerate(func_sites):
     for j in range(pca_n):
-        ax.scatter(coords[ind,0]+shift[j,0], coords[ind,1]+shift[j,1], coords[ind,2]+shift[j,2], s=np.abs(xvhs[i,j])*size_scale, \
-                   c='purple' ,marker='v' )
+        #ax.scatter(coords[ind,0]+shift[j,0], coords[ind,1]+shift[j,1], coords[ind,2]+shift[j,2], s=np.abs(xvhs[i,j])*size_scale, \
+        #           c='purple' ,marker='v' )
+        ax.scatter(coords[ind,0]+shift[j,0], coords[ind,1]+shift[j,1], s=np.abs(xvhs[i,j])*size_scale, \
+                   c=color_list[j] ,marker=marker_dict[np.sign(xvhs[i,j])], zorder=2 )
 
 
 ax.set_axis_off()
 ax.set_xlabel('X')
 ax.set_ylabel('Y')
-ax.set_zlabel('Z')
+#ax.set_zlabel('Z')
 plt.show()
+#plt.savefig("%s_pca%s.png" % (catalyst, pca_n), transparent=True, bbox_inches='tight', pad_inches=0.05)
