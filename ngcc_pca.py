@@ -6,6 +6,7 @@ import re
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
+from matplotlib import patches
 
 import seaborn as sns
 from sklearn.decomposition import PCA
@@ -20,12 +21,12 @@ from pylab import rcParams
 
 font = {'size':14}
 mpl.rc('font',**font)
-rcParams['figure.figsize'] = 14,14
+rcParams['figure.figsize'] = 11,11
 
 #catalyst = "mepyr"
 #catalyst = "tetry17"
-#catalyst = "tetry20"
-catalyst = "tetrid"
+catalyst = "tetry20"
+#catalyst = "tetrid"
 
 csv_dict = {"mepyr":"mepyr_cycle.csv", "tetrid":"tetrid_cycle.csv", "tetry17":"tetry17_cycle.csv", "tetry20":"tetry20_cycle.csv"}
 diff_dict = {"O":"O_diff", "O2H":"O2H_diff", "OH":"OH_diff", "O2":"O2_binding_energy"}
@@ -101,7 +102,6 @@ for index, row in df.iterrows():
 print("FuncGroup Array:")
 print(fg_array)
 
-
 # Do I just directly PCA the FuncGroup-Site array?
 #pca = PCA(n_components=6)
 #pca.fit(fg_array)
@@ -115,24 +115,15 @@ print(fg_array)
 #print(np.sum(np.array(pca.explained_variance_)**0.5))
 #
 ##pca = PCA().fit(fg_array)
-#
-##print()
-u, s, vh = np.linalg.svd(fg_array)
-#print("u: ", u.shape)
-#print(u)
-#print()
-print("s: ", s)
-#print("vh: ", vh.shape)
-#print(vh)
+#plt.plot(np.cumsum(pca.explained_variance_ratio_))
+#plt.show()
 
-## Singular values in this manner will select out top 6 rows of vh
-#I0 = np.zeros((6,36))
-#I0[:6,:6] = np.eye(6)
-#print(np.linalg.norm(np.dot(I0, vh) - vh[:6,:]))
+u, s, vh = np.linalg.svd(fg_array)
+print("s: ", s)
 
 
 vh_s = vh[:6,:] # taking non-zero singular values
-vh_s = vh_s[:pca_n, :] # taking 2 largest singular values
+vh_s = vh_s[:pca_n, :] # taking pca_n largest singular values
 print("vh_s:")
 print(vh_s)
 xvhs = np.dot(fg_array, vh_s.T) # principle components projected onto fg_array
@@ -140,17 +131,12 @@ print(xvhs)
 for i in range(pca_n):
     print("PCA component %s:" %i, np.linalg.norm(xvhs[:,i]))
 
-#C = np.dot(fg_array.T, fg_array)
-#e, v = np.linalg.eigh(C)
-#print(e)
-#print(e**0.5)
-#print(v.shape)
-#print(vh.shape)
-
-#plt.plot(np.cumsum(pca.explained_variance_ratio_))
-#plt.show()
+np.savetxt("%s_pca%s_vecs.csv" % (catalyst, pca_n), xvhs.T, delimiter=',')
 
 sys.exit(-1)
+
+#C = np.dot(fg_array.T, fg_array)
+#e, v = np.linalg.eigh(C)
 
 ## Heatmap, mapped onto molecular coordinates
 # load catalyst geometry
@@ -209,18 +195,32 @@ shift = np.zeros((pca_n, 2))
 for i in range(pca_n):
     shift[i,:] = rotate2D(v1, i*(2*np.pi/pca_n)).T
 
+#arc_angle = 2*np.pi/pca_n
+arc_angle = 360./pca_n
 # Plot all the aggregate functional group effects
 for i,ind in enumerate(func_sites):
+    arcsum = 0.
     for j in range(pca_n):
         #ax.scatter(coords[ind,0]+shift[j,0], coords[ind,1]+shift[j,1], coords[ind,2]+shift[j,2], s=np.abs(xvhs[i,j])*size_scale, \
         #           c='purple' ,marker='v' )
-        ax.scatter(coords[ind,0]+shift[j,0], coords[ind,1]+shift[j,1], s=np.abs(xvhs[i,j])*size_scale, \
-                   c=color_list[j] ,marker=marker_dict[np.sign(xvhs[i,j])], zorder=2 )
+        #ax.scatter(coords[ind,0]+shift[j,0], coords[ind,1]+shift[j,1], s=np.abs(xvhs[i,j])*size_scale, \
+        #           c=color_list[j] ,marker=marker_dict[np.sign(xvhs[i,j])], zorder=2 )
+
+        wsize = np.sum((xvhs[i,:])**2)**0.5
+        arc = 360. * (xvhs[i,j]**2)/wsize**2
+        th1 = arcsum
+        th2 = arcsum + arc
+        arcsum += arc
+        wed = patches.Wedge(coords[ind,:2], r=wsize*0.4, theta1=th1, theta2=th2, zorder=2, color=color_list[j])
+        ax.add_patch(wed)
+
+        #(coords[ind,0]+shift[j,0], coords[ind,1]+shift[j,1], s=np.abs(xvhs[i,j])*size_scale, \
+        #           c=color_list[j] ,marker=marker_dict[np.sign(xvhs[i,j])], zorder=2 )
 
 
 ax.set_axis_off()
 ax.set_xlabel('X')
 ax.set_ylabel('Y')
 #ax.set_zlabel('Z')
-plt.show()
-#plt.savefig("%s_pca%s.png" % (catalyst, pca_n), transparent=True, bbox_inches='tight', pad_inches=0.05)
+#plt.show()
+plt.savefig("%s_Wedgepca%s.png" % (catalyst, pca_n), transparent=True, bbox_inches='tight', pad_inches=0.05)
