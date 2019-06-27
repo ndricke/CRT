@@ -14,7 +14,7 @@ import matplotlib.ticker as ticker
 font = {'size'   : 22}
 matplotlib.rc('font', **font)
 O2_tpssh = -150.3285416
-O2_31gp = -150.32246450 
+O2_31gp = -150.32246450
 Ht2eV = 27.211
 
 
@@ -52,17 +52,17 @@ def AssembleDf(df, active_sites=[], O2_bl = [1.3,1.6], active_site_id='C'):
 
 #"""
 #in_csv = sys.argv[1]
-df1_csv = 'tetrid1_matched.csv'
-df2_csv = 'tetrid2_matched.csv'
-df3_csv = 'tetry_matched.csv'
-df4_csv = 'mepyr_matched.csv'
+df1_csv = "/home/nricke/work/CRT/order_funcs/data/tetrid1_matched.csv"
+df2_csv = "/home/nricke/work/CRT/order_funcs/data/tetrid2_matched.csv"
+df3_csv = "/home/nricke/work/CRT/order_funcs/data/tetry_matched.csv"
+df4_csv = "/home/nricke/work/CRT/order_funcs/data/mepyr_matched.csv"
 df_name_list = [df1_csv, df2_csv, df3_csv, df4_csv]
 #"""
 
 
 df_list = []
 for df_name in df_name_list:
-    df_piece = pd.DataFrame.from_csv(df_name)
+    df_piece = pd.read_csv(df_name)
     df_piece = AssembleDf(df_piece)
     df_list.append(df_piece)
 
@@ -84,25 +84,25 @@ df.to_csv('order_func.csv')
 """
 fig, ax = plt.subplots()
 
-#plt.scatter(df1['Catalyst_Active_Site_CHELPG'], df1['O2_binding_energy'], s=80, c='blue', label='Cation Single Point') 
-#plt.scatter(df2['Catalyst_Active_Site_CHELPG'], df2['O2_binding_energy'], s=80, c='red', label='Optimized Cation') 
+#plt.scatter(df1['Catalyst_Active_Site_CHELPG'], df1['O2_binding_energy'], s=80, c='blue', label='Cation Single Point')
+#plt.scatter(df2['Catalyst_Active_Site_CHELPG'], df2['O2_binding_energy'], s=80, c='red', label='Optimized Cation')
 #plt.xlabel(r'Active Site CHELPG')
 
-#plt.scatter(df1['Catalyst_c1_Active_Site_CHELPG'], df1['O2_binding_energy'], s=80, c='blue', label='Cation Single Point') 
-#plt.scatter(df2['Catalyst_c1_Active_Site_CHELPG'], df2['O2_binding_energy'], s=80, c='red', label='Optimized Cation') 
+#plt.scatter(df1['Catalyst_c1_Active_Site_CHELPG'], df1['O2_binding_energy'], s=80, c='blue', label='Cation Single Point')
+#plt.scatter(df2['Catalyst_c1_Active_Site_CHELPG'], df2['O2_binding_energy'], s=80, c='red', label='Optimized Cation')
 #plt.xlabel(r'Active Site CHELPG')
 
 x_term = 'O2_CHELPG'
-plt.scatter(df_list[0][x_term], df_list[0]['O2_binding_energy'], s=80, c='blue') 
-plt.scatter(df_list[1][x_term], df_list[1]['O2_binding_energy'], s=80, c='red') 
-plt.scatter(df_list[2][x_term], df_list[2]['O2_binding_energy'], s=80, c='green') 
-plt.scatter(df_list[3][x_term], df_list[3]['O2_binding_energy'], s=80, c='orange') 
+plt.scatter(df_list[0][x_term], df_list[0]['O2_binding_energy'], s=80, c='blue')
+plt.scatter(df_list[1][x_term], df_list[1]['O2_binding_energy'], s=80, c='red')
+plt.scatter(df_list[2][x_term], df_list[2]['O2_binding_energy'], s=80, c='green')
+plt.scatter(df_list[3][x_term], df_list[3]['O2_binding_energy'], s=80, c='orange')
 plt.xlabel(r'Active Site CHELPG Difference')
 
-#plt.scatter(df['O2_CHELPG'], df['O2_binding_energy'], s=80, c='blue') 
+#plt.scatter(df['O2_CHELPG'], df['O2_binding_energy'], s=80, c='blue')
 #plt.xlabel(r'O$_2$ CHELPG')
 
-#plt.scatter(df1['Cat-O2_Bond_Length'], df1['O2_binding_energy'], s=80, c='blue') 
+#plt.scatter(df1['Cat-O2_Bond_Length'], df1['O2_binding_energy'], s=80, c='blue')
 #plt.xlabel(r'O$_2$ Bond Length (Angstrom)')
 
 #plt.scatter(df['IE'], df['O2_binding_energy'], s=80, c='blue') #possibly nonlinear, possibly noise
@@ -142,8 +142,9 @@ plt.show()
 
 #"""
 
-df = df_list[3]
+#df = df_list[3]
 #df = pd.concat(df_list[:2])
+df = pd.concat(df_list)
 
 #df = df.loc[df['Catalyst_File_Name']]
 cat_type_list = []
@@ -212,5 +213,3 @@ plt.show()
 #y_pred = lassoreg.predict(df[predictors])
 #print(y_pred)
 #"""
-
-

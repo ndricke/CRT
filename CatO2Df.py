@@ -6,11 +6,7 @@ import sys
 import pandas as pd
 import numpy as np
 import re
-
 from scipy import stats
-import sklearn.linear_model as lm
-from sklearn import preprocessing
-from sklearn import metrics
 
 #Parameters from DFT and conversion factors
 O2_tpssh = -150.3285416 #Total Free Energy of pcm O2 with 6-31+g* basis
@@ -67,6 +63,28 @@ def AddEnergyDiffs(input_df, energy_columns, diff_names, shift=[0.,0.,0.]):
     df = df.assign(OH_diff = (df['CatalystOH_Energy'] - df['Catalyst_Energy'] - shift[2])*Ht2eV)
     return df
 
+def AddReactionEnergiesORR(input_df, shift=[0.,0.,0.,0.]):
+    """Take the difference between the energy of the bare catalyst and a list of other energies in the dataframe
+    Parameters:
+    -----------
+    input_df: pandas dataframe
+        must contain a column labeled 'Catalyst_Energy', and columns named for each of the energy columns
+    energy_columns: list
+        the names for each column to take as the difference from 'Catalyst_Energy'
+    diff_names: list
+        the name for the new columns that are added, which are the energy differences
+    """
+
+    #for i, column_name in enumerate(energy_columns):
+    #    df = df.assign(diff_name[i] = (df[column_name] - df['Catalyst_Energy'])*Ht2eV)
+
+    df = input_df.copy()
+    print(df.shape)
+    df = df.assign(O2_to_OOH = (df['CatalystOOH_Energy'] - df['CatalystO2_Energy'] + shift[0])*Ht2eV)
+    df = df.assign(OOH_to_O = (df['CatalystO_Energy'] - df['CatalystOOH_Energy'] + shift[1])*Ht2eV)
+    df = df.assign(O_to_OH = (df['CatalystOH_Energy'] - df['CatalystO_Energy'] + shift[2])*Ht2eV)
+    df = df.assign(OH_to_bare = (df['Catalyst_Energy'] - df['CatalystOH_Energy'] + shift[3])*Ht2eV)
+    return df
 
 def CleanDf(input_df, active_sites=None, O2_bl=None, active_site_id=None, O2_binding=None):
     """Removes entries that are outside particular parameters

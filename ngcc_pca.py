@@ -25,8 +25,8 @@ rcParams['figure.figsize'] = 11,11
 
 #catalyst = "mepyr"
 #catalyst = "tetry17"
-catalyst = "tetry20"
-#catalyst = "tetrid"
+#catalyst = "tetry20"
+catalyst = "tetrid"
 
 csv_dict = {"mepyr":"mepyr_cycle.csv", "tetrid":"tetrid_cycle.csv", "tetry17":"tetry17_cycle.csv", "tetry20":"tetry20_cycle.csv"}
 diff_dict = {"O":"O_diff", "O2H":"O2H_diff", "OH":"OH_diff", "O2":"O2_binding_energy"}
@@ -131,9 +131,8 @@ print(xvhs)
 for i in range(pca_n):
     print("PCA component %s:" %i, np.linalg.norm(xvhs[:,i]))
 
-np.savetxt("%s_pca%s_vecs.csv" % (catalyst, pca_n), xvhs.T, delimiter=',')
-
-sys.exit(-1)
+#np.savetxt("%s_pca%s_vecs.csv" % (catalyst, pca_n), vh_s.T, delimiter=',')
+#sys.exit(-1)
 
 #C = np.dot(fg_array.T, fg_array)
 #e, v = np.linalg.eigh(C)
