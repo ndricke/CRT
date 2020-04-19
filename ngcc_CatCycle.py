@@ -141,12 +141,13 @@ ax = sns.kdeplot(df[df["Catalyst_Type"]=="Tetry, Active Site 2"]["O2_binding_ene
 ax.set_ylabel("Occurrences")
 ax.set_xlabel(r"O$_2$ Binding Energy")
 
-#plt.show()
+plt.show()
 #plt.savefig("TetrMepyr_msh_ReactCycleFunc.png", transparent=True, bbox_inches='tight', pad_inches=1.02)
 #plt.savefig("TetrMepyr_norsk_ReactCycleFunc.png", transparent=True, bbox_inches='tight', pad_inches=1.02)
 #plt.savefig("TetrMepyr_steps34_ReactCycleFunc.png", transparent=True, bbox_inches='tight', pad_inches=1.02)
 #plt.savefig("TetrMepyr_ROOHnorsk.png", transparent=True, bbox_inches='tight', pad_inches=1.02)
-plt.savefig("TetrMepyr_O2density.png", transparent=True, bbox_inches='tight', pad_inches=1.02)
+
+#plt.savefig("TetrMepyr_O2density.png", transparent=True, bbox_inches='tight', pad_inches=1.02)
 
 
 
