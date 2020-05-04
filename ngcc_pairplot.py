@@ -28,13 +28,15 @@ df_O2H = df[df["Bound"] == "O2H"].reset_index()
 df_O = df[df["Bound"] == "O"]
 df_OH = df[df["Bound"] == "OH"]
 
+df_O2.loc[df_O2["data_dir"] == "mepyr", "Bound_site"] = np.NaN
+df_O2.loc[(df_O2["Catalyst"] == "tetry") & (df_O2["Bound_site"] == 26), "Bound_site"] = 20
+df_O2.loc[(df_O2["Catalyst"] == "tetry") & (df_O2["Bound_site"] == 18), "Bound_site"] = 17
+
 for df_i in [df_O2, df_O2H, df_O, df_OH, df]:
     print(df_i.shape)
 
-#df_merge = df_O2.join(df_O2H, on=["data_dir", "Funcnum"], how=merge_method, lsuffix="_O2", rsuffix="_O2H")
-df_merge = df_O2.merge(df_O2H, left_on=["data_dir", "Funcnum"], right_on=["data_dir", "Funcnum"], how=merge_method, suffixes=("_O2", "_O2H"))
+df_merge = df_O2.merge(df_O2H, on=["data_dir", "Funcnum", "Bound_site"], how="inner", suffixes=("_O2", "_O2H"))
 print(df_merge.shape)
-
 
 """
 df_merge = df_merge.merge(df_O, on=["data_dir", "Funcnum"], how=merge_method, rsuffix="_O")
