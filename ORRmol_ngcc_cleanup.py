@@ -1,18 +1,13 @@
 import sys
-import pandas as pd
 import numpy as np
-import re
-import scipy.stats as stat
+import pandas as pd
 
-import matplotlib as mpl
-import matplotlib.pyplot as plt
-
-import seaborn as sns
 
 merge_method = "inner"
 infile = "catdata_bindE.json"
 df = pd.read_json(infile)
 df.drop_duplicates(inplace=True)
+df.drop(columns=['0', 'index', 'Charge', 'Multiplicity'], inplace=True)
 
 """
 How to get the free energy of reaction for each of these?
@@ -35,14 +30,14 @@ df_O2.loc[(df_O2["Catalyst"] == "tetry") & (df_O2["Bound_site"] == 18), "Bound_s
 for df_i in [df_O2, df_O2H, df_O, df_OH, df]:
     print(df_i.shape)
 
-df_merge = df_O2.merge(df_O2H, on=["data_dir", "Funcnum", "Bound_site"], how="inner", suffixes=("_O2", "_O2H"))
+df_merge = df_O2.merge(df_O2H, on=["data_dir", "Funcnum", "Bound_site"], how=merge_method, suffixes=("_O2", "_O2H"))
 print(df_merge.shape)
-
-"""
-df_merge = df_merge.merge(df_O, on=["data_dir", "Funcnum"], how=merge_method, rsuffix="_O")
+df_merge = df_merge.merge(df_O, on=["data_dir", "Funcnum", "Bound_site"], how=merge_method, suffixes=("", "_O"))
 print(df_merge.shape)
-df_merge = df_merge.merge(df_OH, on=["data_dir", "Funcnum"], how=merge_method, rsuffix="_OH")
+df_merge = df_merge.merge(df_OH, on=["data_dir", "Funcnum", "Bound_site"], how=merge_method, suffixes=("", "_OH"))
 print(df_merge.shape)
 df_merge.drop_duplicates(inplace=True)
 print(df_merge.shape)
-"""
+df_merge.to_csv("catdata_bindE_IntMerge.csv")
+
+
