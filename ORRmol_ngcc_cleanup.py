@@ -18,8 +18,8 @@ Also need to match all of the catalysts together by matching the columns data_di
 
 """
 
-df_O2 = df[df["Bound"] == "O2"].reset_index()
-df_O2H = df[df["Bound"] == "O2H"].reset_index()
+df_O2 = df[df["Bound"] == "O2"]
+df_O2H = df[df["Bound"] == "O2H"]
 df_O = df[df["Bound"] == "O"]
 df_OH = df[df["Bound"] == "OH"]
 
@@ -30,14 +30,25 @@ df_O2.loc[(df_O2["Catalyst"] == "tetry") & (df_O2["Bound_site"] == 18), "Bound_s
 for df_i in [df_O2, df_O2H, df_O, df_OH, df]:
     print(df_i.shape)
 
-df_merge = df_O2.merge(df_O2H, on=["data_dir", "Funcnum", "Bound_site"], how=merge_method, suffixes=("_O2", "_O2H"))
+# add suffix to all columns except ["data_dir", "Funcnum", "Bound_site"] which are preserved for merging
+suffix_list = ["_O2", "_O2H", "_O", "_OH"]
+keep_same = ["data_dir", "Funcnum", "Bound_site"]
+for i, df_intermediate in enumerate([df_O2, df_O2H, df_O, df_OH]):
+    df_intermediate.columns = ['{}{}'.format(c, '' if c in keep_same else suffix_list[i]) for c in df_intermediate.columns]
+
+
+# TODO for some reason there was no _O data in the final database. Figure out why it's not there
+df_merge = df_O2.merge(df_O2H, on=["data_dir", "Funcnum", "Bound_site"], how=merge_method)
 print(df_merge.shape)
-df_merge = df_merge.merge(df_O, on=["data_dir", "Funcnum", "Bound_site"], how=merge_method, suffixes=("", "_O"))
+print(df_merge.columns)
+df_merge = df_merge.merge(df_O, on=["data_dir", "Funcnum", "Bound_site"], how=merge_method)
 print(df_merge.shape)
-df_merge = df_merge.merge(df_OH, on=["data_dir", "Funcnum", "Bound_site"], how=merge_method, suffixes=("", "_OH"))
+print(df_merge.columns)
+df_merge = df_merge.merge(df_OH, on=["data_dir", "Funcnum", "Bound_site"], how=merge_method)
 print(df_merge.shape)
 df_merge.drop_duplicates(inplace=True)
 print(df_merge.shape)
+print(df_merge.columns)
 df_merge.to_csv("catdata_bindE_IntMerge.csv")
 
 
