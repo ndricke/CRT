@@ -1,3 +1,4 @@
+import os
 from rdkit import Chem
 import pandas as pd
 from openbabel import pybel
@@ -19,16 +20,15 @@ def check_substructs(substruct, smiles_dict):
     Input:
     substruct (rdkit mol): substructure to check exists in the smiles in smiles_dict
     smiles_dict (dictionary): filename-smiles 
+    Output:
+    (dictionary): filename: presence or absence
     """
+    match_dict = {}
     for key, value in smiles_dict.items():
         m = Chem.MolFromSmiles(value)
         # check if substruct is a substructure of m
-        if m.HasSubstructMatch(substruct):
-            print("WINNING: ", key)
-        else:
-            print("LOSING: ", key)
-        
-
+        match_dict[key] = m.HasSubstructMatch(substruct)
+    return match_dict
 
 
 def infer_smiles(xyz_filename):
@@ -54,8 +54,12 @@ if __name__ == "__main__":
 
     smiles_list = []
     inferred_smiles = smiles_from_dir(args.directory)
-    print(inferred_smiles)
 
     m_sub = Chem.MolFromSmiles(args.substructure)
-    check_substructs(m_sub, inferred_smiles)
+    substructure_match_dict = check_substructs(m_sub, inferred_smiles)
+    s = pd.Series(substructure_match_dict)
+    print(s)
+
+
+
 
