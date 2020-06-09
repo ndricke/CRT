@@ -14,7 +14,7 @@ def smiles_from_dir(indir):
     return smiles_dict
 
 
-def check_substructs(substruct, smiles_dict):
+def dict_substructs(substruct, smiles_dict):
     """
     check if each smiles in list has substruct
     Input:
@@ -29,6 +29,14 @@ def check_substructs(substruct, smiles_dict):
         # check if substruct is a substructure of m
         match_dict[key] = m.HasSubstructMatch(substruct)
     return match_dict
+
+
+def smiles_substruct(smiles, substruct):
+        print("I'm trying ", smiles)
+        m = Chem.MolFromSmiles(smiles)
+        m_sub = Chem.MolFromSmiles(substruct)
+        print("Got the big m")
+        return m.HasSubstructMatch(m_sub)
 
 
 def infer_smiles(xyz_filename):
@@ -56,7 +64,7 @@ if __name__ == "__main__":
     inferred_smiles = smiles_from_dir(args.directory)
 
     m_sub = Chem.MolFromSmiles(args.substructure)
-    substructure_match_dict = check_substructs(m_sub, inferred_smiles)
+    substructure_match_dict = dict_substructs(m_sub, inferred_smiles)
     s = pd.Series(substructure_match_dict)
     print(s)
 

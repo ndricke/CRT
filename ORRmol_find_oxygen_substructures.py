@@ -1,5 +1,5 @@
 import pandas as pd
-import find_substructures
+from CRT import find_substructures
 import autoq.scandir_analysis as scana
 from rdkit import Chem
 from rdkit.Chem import inchi
@@ -35,9 +35,11 @@ for parent_dir, subpair in xyz_matches.items():
         df_init_aug = analyze_xyz_dir(init_smiles)
         df_final_aug = analyze_xyz_dir(final_smiles)
 
-        df_merge = df_init_aug.merge(df_final_aug[["filename", "Funcnum", "Bound_site", "SMILES", "inchikey"]], on=["Funcnum", "Bound_site"], how="outer")
+        df_merge = df_init_aug.merge(df_final_aug[["filename", "Funcnum", "Bound_site", "SMILES", "inchikey"]], 
+            on=["Funcnum", "Bound_site"], how="outer", suffixes=("_init","_final"))
 
         #print(df_merge[["filename_x", "SMILES_x", "filename_y", "SMILES_y"]])
-        df["unchanged"] = df_merge[df_merge["inchikey_x"] == df_merge["inchikey_y"]])
-        df["bridge"] = 
+        df_merge["unchanged"] = df_merge["inchikey_init"] == df_merge["inchikey_final"]
+        df_merge["bridge"] = df_merge.SMILES_final.apply(find_substructures.smiles_substruct, substruct="C1OC1")
+        print(df_merge)
     
