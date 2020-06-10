@@ -24,8 +24,10 @@ def analyze_xyz_dir(file_smiles):
         return df_aug
 
 
-xyz_matches = {"tetry1/":{"O/": "cat-O-out/xyz/"}}
+xyz_matches = {"tetry1/":{"O/": "cat-O-out/xyz/", "OH/": "cat-OH-out/xyz/", "O2H": "cat-O2H-out/xyz/", "cat-xyz/": "cat-out/xyz/",
+    "O2/": "cat-O2-out/xyz/"}}
 
+df_list = []
 for parent_dir, subpair in xyz_matches.items():
     for init_dir, final_dir in subpair.items():
         print(init_dir, final_dir)
@@ -41,5 +43,13 @@ for parent_dir, subpair in xyz_matches.items():
         #print(df_merge[["filename_x", "SMILES_x", "filename_y", "SMILES_y"]])
         df_merge["unchanged"] = df_merge["inchikey_init"] == df_merge["inchikey_final"]
         df_merge["bridge"] = df_merge.SMILES_final.apply(find_substructures.smiles_substruct, substruct="C1OC1")
-        print(df_merge)
+        df_merge["init_dir"] = init_dir
+        df_merge["parent_dir"] = parent_dir
+        print(df_merge.head(5))
+        print(df_merge.shape)
+        df_list.append(df_merge)
+
+df_all = pd.concat(df_list)
+df_all.to_csv("ngcc_catalyst_init_final_opt.csv")
+
     
