@@ -32,10 +32,11 @@ def dict_substructs(substruct, smiles_dict):
 
 
 def smiles_substruct(smiles, substruct):
-        print("I'm trying ", smiles)
-        m = Chem.MolFromSmiles(smiles)
+        try:
+            m = Chem.MolFromSmiles(smiles)
+        except:
+            print(smiles)
         m_sub = Chem.MolFromSmiles(substruct)
-        print("Got the big m")
         return m.HasSubstructMatch(m_sub)
 
 
