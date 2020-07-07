@@ -2,12 +2,32 @@ import sys
 import numpy as np
 import pandas as pd
 
+dir_dict = {"tetr_enum/":"tetrEnum", "tetry1/":"tetry1", "mepyr/":"mepyr", "tetrid1/":"tetrid", "tetry_AS/":"tetryAs", 
+    "tetrid_AS":"tetridAs"}
 
 merge_method = "inner"
-infile = "catdata_bindE.json"
+infile = "catdata_all_bindE.json"
 df = pd.read_json(infile)
 df.drop_duplicates(inplace=True)
-df.drop(columns=['0', 'index', 'Charge', 'Multiplicity'], inplace=True)
+df.drop(columns=[ 'index', 'Charge', 'Multiplicity'], inplace=True)
+df["fprefix"] = df.Filename.str.split(".").str[0]
+print(df.shape)
+
+df_if = pd.read_csv("ngcc_catalyst_init_final_opt.csv")
+df_if["fprefix"] = df_if.filename_final.str.split(".").str[0]
+df_if["data_dir"] = df_if.parent_dir.replace(dir_dict) 
+
+
+df_break = df_if[(df_if["unchanged"] == False) & (df_if["bridge"] == False)]
+# drop all rows from df with fprefix and data_dir that match rows in df_break
+df = df.merge(df_break[["fprefix", "data_dir", "unchanged", "bridge"]], how="left", on=["fprefix", "data_dir"])
+print(df.shape)
+print("df_break shape: ", df_break.shape)
+df = df[~((df_if["unchanged"] == False) & (df_if["bridge"] == False))]
+print(df.shape)
+
+# TODO figure out how to deal with bridge/converged data and clean it out before reshaping
+
 
 """
 How to get the free energy of reaction for each of these?
@@ -24,8 +44,6 @@ df_O = df[df["Bound"] == "O"]
 df_OH = df[df["Bound"] == "OH"]
 
 df_O2.loc[df_O2["data_dir"] == "mepyr", "Bound_site"] = np.NaN
-df_O2.loc[(df_O2["Catalyst"] == "tetry") & (df_O2["Bound_site"] == 26), "Bound_site"] = 20
-df_O2.loc[(df_O2["Catalyst"] == "tetry") & (df_O2["Bound_site"] == 18), "Bound_site"] = 17
 
 for df_i in [df_O2, df_O2H, df_O, df_OH, df]:
     print(df_i.shape)
@@ -36,8 +54,6 @@ keep_same = ["data_dir", "Funcnum", "Bound_site"]
 for i, df_intermediate in enumerate([df_O2, df_O2H, df_O, df_OH]):
     df_intermediate.columns = ['{}{}'.format(c, '' if c in keep_same else suffix_list[i]) for c in df_intermediate.columns]
 
-
-# TODO for some reason there was no _O data in the final database. Figure out why it's not there
 df_merge = df_O2.merge(df_O2H, on=["data_dir", "Funcnum", "Bound_site"], how=merge_method)
 print(df_merge.shape)
 print(df_merge.columns)
@@ -49,6 +65,6 @@ print(df_merge.shape)
 df_merge.drop_duplicates(inplace=True)
 print(df_merge.shape)
 print(df_merge.columns)
-df_merge.to_csv("catdata_bindE_IntMerge.csv")
+df_merge.to_json("catdata_bindE_IntMerge.json")
 
 

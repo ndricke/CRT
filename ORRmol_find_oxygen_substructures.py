@@ -26,6 +26,7 @@ def analyze_xyz_dir(file_smiles):
 
 # make sure tetrid1 doesn't have anything strange; a lot of them look pre-optimized
 xyz_matches = {
+    "mepyr/":{"cat-xyz/":"cat-out/xyz/", "catO2-xyz":"catO2-out/xyz/", "O2H/":"cat-O2H-out/xyz/", "O/":"cat-O-out/xyz/", "OH/":"cat-OH-out/xyz/"},
     "tetry1/":{"O/": "cat-O-out/xyz/", "OH/": "cat-OH-out/xyz/", "O2H": "cat-O2H-out/xyz/", "cat-xyz/": "cat-out/xyz/", "O2/": "cat-O2-out/xyz/"},
     "tetr_enum/":{"cat-xyz/":"cat-out/xyz/", "catO2-xyz":"catO2-out/xyz/", "catO2H-xyz/":"catO2H-out/xyz/", "catO-xyz/":"catO-out/xyz/", "catOH-xyz/":"catOH-out/xyz/"},
     "tetrid1/":{"O/": "cat-O-out/xyz/", "OH/": "cat-OH-out/xyz/", "O2H": "cat-O2H-out/xyz/", "cat-xyz/": "cat-out/xyz/", "O2/": "catO2-out/xyz/"},
@@ -58,6 +59,8 @@ for parent_dir, subpair in xyz_matches.items():
         df_list.append(df_merge)
 
 df_all = pd.concat(df_list)
+df_all.reset_index(inplace=True)
+df_all.drop(columns="index", inplace=True)
 df_all.to_csv("ngcc_catalyst_init_final_opt.csv")
 
     

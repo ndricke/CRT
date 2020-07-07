@@ -26,7 +26,7 @@ TODO:
 Ht2eV = 27.211399
 kC2eV = 1/23.06054195 
 
-df = pd.read_csv("~/work/ORRmol/ngcc_func/catdata_bindE_IntMerge.csv", index_col=0)
+df = pd.read_json("~/work/ORRmol/ngcc_func/catdata_bindE_IntMerge.json")
 df.rename(columns={"Catalyst_O2":"Catalyst", "Esolv_bare_O":"Esolv_bare"}, inplace=True)
 df_gform = pd.read_csv("~/work/ORRmol/dGform_catalysts/ngcc_gform_bindE_IntMerge.csv", index_col=0)
 df_gform.replace("None", np.nan, inplace=True)
