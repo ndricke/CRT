@@ -23,11 +23,12 @@ df_break = df_if[(df_if["unchanged"] == False) & (df_if["bridge"] == False)]
 df = df.merge(df_break[["fprefix", "data_dir", "unchanged", "bridge"]], how="left", on=["fprefix", "data_dir"])
 print(df.shape)
 print("df_break shape: ", df_break.shape)
-df = df[~((df_if["unchanged"] == False) & (df_if["bridge"] == False))]
+df = df[~((df["unchanged"] == False) & (df["bridge"] == False))]
+print(df.shape)
+df = df[df["GeometryConverged"] == True]
 print(df.shape)
 
-# TODO figure out how to deal with bridge/converged data and clean it out before reshaping
-
+# TODO fix bridge so it isn't NaN in catdata_bindE_IntMerge.json
 
 """
 How to get the free energy of reaction for each of these?

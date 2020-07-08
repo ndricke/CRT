@@ -9,6 +9,8 @@ import matplotlib.pyplot as plt
 
 import seaborn as sns
 
+# TODO this is missing bridge_O (and the other bridge data)
+
 #cols = ["dGrxn_O2", "dGrxn_O2H", "dGrxn_O", "dGrxn_OH", "dGrxn_regen"]
 cols = ["dGrxn_O2_and_O2H", "dGrxn_O", "dGrxn_OH", "dGrxn_regen"]
 
@@ -20,8 +22,6 @@ df.loc[(df.Catalyst == "tetry") & (df.Bound_site == 17.0), 'Catalyst'] = "tetry-
 df.loc[(df.Catalyst == "tetry") & (df.Bound_site == 20.0), 'Catalyst'] = "tetry-20"
 df["dGrxn_O2_and_O2H"] = df["dGrxn_O2"] + df["dGrxn_O2H"]
 
-for intermediate in ["O2", "O2H", "O", "OH"]:
-    df = df[df["GeometryConverged_"+intermediate] == True]
 
 #df_mepyr = df[df["Catalyst"] == "mepyr"]
 
