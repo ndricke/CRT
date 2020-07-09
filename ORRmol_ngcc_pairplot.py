@@ -18,8 +18,11 @@ cols = ["dGrxn_O2_and_O2H", "dGrxn_O", "dGrxn_OH", "dGrxn_regen"]
 
 df = pd.read_csv("catdata_dGrxn.csv", index_col=0)
 
+# There are 58 bridge O's at site 20, and only 2 at site 17
 df.loc[(df.Catalyst == "tetry") & (df.Bound_site == 17.0), 'Catalyst'] = "tetry-17"
 df.loc[(df.Catalyst == "tetry") & (df.Bound_site == 20.0), 'Catalyst'] = "tetry-20"
+df.loc[(df.Catalyst == "tetry-17") & (df.Bound_site == 20.0), 'Catalyst'] = "tetry-17-bridge"
+df.loc[(df.Catalyst == "tetry-20") & (df.Bound_site == 20.0), 'Catalyst'] = "tetry-20-bridge"
 df["dGrxn_O2_and_O2H"] = df["dGrxn_O2"] + df["dGrxn_O2H"]
 
 

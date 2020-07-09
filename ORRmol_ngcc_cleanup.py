@@ -2,8 +2,8 @@ import sys
 import numpy as np
 import pandas as pd
 
-dir_dict = {"tetr_enum/":"tetrEnum", "tetry1/":"tetry1", "mepyr/":"mepyr", "tetrid1/":"tetrid", "tetry_AS/":"tetryAs", 
-    "tetrid_AS":"tetridAs"}
+dir_dict = {"tetr_enum/":"tetrEnum", "tetry1/":"tetry1", "mepyr/":"mepyr", "tetrid1/":"tetrid1", "tetry_AS/":"tetryAs", 
+    "tetrid_AS/":"tetridAs"}
 
 merge_method = "inner"
 infile = "catdata_all_bindE.json"
@@ -18,15 +18,15 @@ df_if["fprefix"] = df_if.filename_final.str.split(".").str[0]
 df_if["data_dir"] = df_if.parent_dir.replace(dir_dict) 
 
 
-df_break = df_if[(df_if["unchanged"] == False) & (df_if["bridge"] == False)]
+# df_break = df_if[(df_if["unchanged"] == False) & (df_if["bridge"] == False)]
 # drop all rows from df with fprefix and data_dir that match rows in df_break
-df = df.merge(df_break[["fprefix", "data_dir", "unchanged", "bridge"]], how="left", on=["fprefix", "data_dir"])
+df = df.merge(df_if[["fprefix", "data_dir", "unchanged", "bridge"]], how="left", on=["fprefix", "data_dir"])
 print(df.shape)
-print("df_break shape: ", df_break.shape)
 df = df[~((df["unchanged"] == False) & (df["bridge"] == False))]
 print(df.shape)
 df = df[df["GeometryConverged"] == True]
 print(df.shape)
+print(df["bridge"])
 
 # TODO fix bridge so it isn't NaN in catdata_bindE_IntMerge.json
 
