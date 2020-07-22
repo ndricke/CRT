@@ -57,4 +57,4 @@ dfm["dGrxn_regen"] = Ht2eV*(dfm["Esolv_bare"]-dfm["Esolv_OH"]) + dfm["dGrxn_corr
 print(dfm[["dGrxn_O2","dGrxn_O2H","dGrxn_O","dGrxn_OH", "dGrxn_regen"]])
 print(dfm[["dGrxn_O2","dGrxn_O2H","dGrxn_O","dGrxn_OH", "dGrxn_regen"]].sum(axis=1))
 print(dfm.columns)
-dfm.to_csv("catdata_dGrxn.csv")
+dfm.to_json("catdata_dGrxn.json")
