@@ -96,6 +96,30 @@ print("Unique Subs: ", df.func_loc.unique())
 print(rxn_energies)
 print(df[["None_O2", "O2_O2H", "O2H_O", "O_OH", "OH_None"]])
 
+# For the grid of functional groups and substitutions, check where data is missing
+# Each sub should have all the funcs, each func should have all the subs
+# For each sub, get all the funcs it has
+# Compare all the func lists, and print the set of funcs that exist for all subs
+# removing func_loc 38, the active site I believe, should resolve this for tetrid
+func_sub_list = []
+for func in list(df.func.unique()):
+    fl = list(df[df["func"] == func].func_loc.unique())
+    print(fl)
+    func_sub_list.append(fl)
+
+res = list(set.intersection(*map(set, func_sub_list)))
+print()
+print(res)
+print()
+func_sub_list = []
+for func_loc in list(df.func_loc.unique()):
+    fl = list(df[df["func_loc"] == func_loc].func.unique())
+    print(fl)
+    func_sub_list.append(fl)
+
+res = list(set.intersection(*map(set, func_sub_list)))
+print()
+print(res)
 
 sys.exit(-1)
 
