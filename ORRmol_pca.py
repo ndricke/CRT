@@ -34,7 +34,9 @@ def reform_gform(df_in, catalyst, bound_site=None):
     rxn_steps = ["None_O2", "O2_O2H", "O2H_O", "O_OH", "OH_None"]
     df_c = df_in[df_in["Catalyst"] == catalyst]
     if bound_site != None:
-        df_c = df_in[df_in["Bound_site"] == bound_site]
+        df_c = df_in[(df_in["Bound_site"] == bound_site) | (df_in["Bound"] == "None")]
+
+    print(df_c)
 
     rxn_Es = {}
     for i, bound in enumerate(bound_cycle):
@@ -49,14 +51,18 @@ def reform_gform(df_in, catalyst, bound_site=None):
 
 font = {'size':14}
 mpl.rc('font',**font)
-rcParams['figure.figsize'] = 11,11
+#rcParams['figure.figsize'] = 20,11
+rcParams['figure.figsize'] = 15,11
 
 #catalyst = "mepyr"
-catalyst = "tetrid"
-bound_site = None
-#catalyst = "tetry"
-#bound_site = 17
-#bound_site = 20
+#catalyst = "tetrid"
+#bound_site = None
+#catalyst_site = catalyst
+
+catalyst = "tetry"
+#bound_site = "17"
+bound_site = "20"
+catalyst_site = catalyst+bound_site
 
 Ht2eV = 27.211
 pca_n = 3
@@ -67,18 +73,23 @@ atom_dict = {'C':'k','N':'b','F':'r','H':'gray'}
 tail_dict = {"mepyr":list(range(2,6))+list(range(10,14)), "tetry17":list(range(18,26)), "tetry20":list(range(18,26)), 
                 "tetrid":list(range(21,29))}
 
+
 # blend tails (0-index):
 blend_dict = {"mepyr":[[2,1],[5,6]], "tetry17":[[18,4], [21,3]], "tetry20":[[18,4], [21,3]], "tetrid":[[21,4], [24,3]]}
 # Location of xyz file for base catalyst
-xyz_dict = {"mepyr":"xyz/mepyr_optsp_xy_a0m2.xyz", "tetry17":"xyz/tetry_optsp_xy_a0m2.xyz", 
-            "tetry20":"xyz/tetry_optsp_xy_a0m2.xyz", "tetrid":"xyz/tetrid_optsp_xy_a0m2.xyz"}
+xyz_path = "/home/nricke/work/ORRmol/base_xyz_xy/"
+xyz_dict = {"mepyr":xyz_path+"mepyr_optsp_xy_a0m2.xyz", "tetry17":xyz_path+"tetry_optsp_xy_a0m2.xyz", 
+            "tetry20":xyz_path+"tetry_optsp_xy_a0m2.xyz", "tetrid":xyz_path+"tetrid_optsp_xy_a0m2.xyz"}
 AS_dict = {"mepyr":18, "tetry17":31, "tetry20":33, "tetrid":38}
+remove_sites = {"tetrid":{38}, "mepyr":{18}, "tetry17":{30}, "tetry20":{30}}
+remove_funcs = {"tetrid":set(), "mepyr":{"N", "Cl", "nitroso"}, "tetry17":set(), "tetry20":set()}
 
 # Plotting settings
 marker_dict = {1:"v", -1:"D"}
 color_list = ['green', 'magenta', 'goldenrod']
 
 df_unmod = pd.read_csv("~/work/ORRmol/dGform_catalysts/ngcc_gform.csv", index_col=0) # load unmodified catalyst data
+df_unmod = df_unmod[df_unmod["Catalyst"] == catalyst]
 rxn_energies = reform_gform(df_unmod, catalyst, bound_site)
 df = pd.read_json("~/work/ORRmol/ngcc_func/catdata_dGrxn.json")
 df = df[df["Catalyst"] == catalyst]
@@ -101,42 +112,64 @@ print(df[["None_O2", "O2_O2H", "O2H_O", "O_OH", "OH_None"]])
 # For each sub, get all the funcs it has
 # Compare all the func lists, and print the set of funcs that exist for all subs
 # removing func_loc 38, the active site I believe, should resolve this for tetrid
-func_sub_list = []
+sub_list = []
 for func in list(df.func.unique()):
     fl = list(df[df["func"] == func].func_loc.unique())
-    print(fl)
-    func_sub_list.append(fl)
+    fl.sort()
+    print(func, fl)
+    sub_list.append(fl)
 
-res = list(set.intersection(*map(set, func_sub_list)))
+res = list(set.intersection(*map(set, sub_list)))
 print()
 print(res)
 print()
-func_sub_list = []
+func_list = []
 for func_loc in list(df.func_loc.unique()):
     fl = list(df[df["func_loc"] == func_loc].func.unique())
-    print(fl)
-    func_sub_list.append(fl)
+    fl.sort()
+    print(func_loc, fl)
+    func_list.append(fl)
 
-res = list(set.intersection(*map(set, func_sub_list)))
+res = list(set.intersection(*map(set, func_list)))
 print()
 print(res)
 
-sys.exit(-1)
+#sys.exit(-1)
+
+# remove difficult functional groups and substitutions
+sub_set = set(df.func_loc.unique()); func_set = set(df.func.unique())
+sub_set -= remove_sites[catalyst_site]
+func_set -= remove_funcs[catalyst_site]
+
+print()
+print(sub_set)
+print(func_set)
 
 # Generate matrix of functional group effects on reaction step
-func_num = len(func_dict)
-print(interm_num, func_num)
-fg_array = np.zeros((len(sub_dict), interm_num*func_num))
-for index, row in df.iterrows():
-    i = sub_dict[row['Sub_1']] #rows --> modified sites
-    j = func_dict[row['Func_1']] #columns --> functional group
-    fg_array[i,j] = row["O2_binding_energy"]
-    fg_array[i,j+func_num] = row["O2H_diff"]
-    fg_array[i,j+2*func_num] = row["O_diff"]
-    fg_array[i,j+3*func_num] = row["OH_diff"]
+func_num = len(func_set)
+subreact_count = 5  # 5 intermediate steps in the ORR cycle
+print(subreact_count, func_num)
+fg_array = np.zeros((len(sub_set), subreact_count*func_num))
+
+sub_sites = list(sub_set)
+for i, sub in enumerate(sub_sites):
+    for j, func in enumerate(list(func_set)):
+        row = df[(df["func"] == func) & (df["func_loc"] == sub)].iloc[0]
+        fg_array[i,j] = row["None_O2"]
+        fg_array[i,j+func_num] = row["O2_O2H"]
+        fg_array[i,j+2*func_num] = row["O2H_O"]
+        fg_array[i,j+3*func_num] = row["O_OH"]
+        fg_array[i,j+4*func_num] = row["OH_None"]
+
 
 print("FuncGroup Array:")
 print(fg_array)
+
+test_idx = 1
+print()
+print(fg_array[test_idx,:])
+print(df[df["func_loc"] == list(sub_set)[test_idx]][["None_O2", "O2_O2H", "O2H_O", "O_OH", "OH_None"]])
+
 
 # Do I just directly PCA the FuncGroup-Site array?
 #pca = PCA(n_components=6)
@@ -175,20 +208,22 @@ for i in range(pca_n):
 
 ## Heatmap, mapped onto molecular coordinates
 # load catalyst geometry
-atoms, coords = CD.loadXYZ(data_dir + xyz_dict[catalyst])
-tail = tail_dict[catalyst] # tail_dict lists the H's and C's that are part of the "graphitic" region of the catalyst
-func_sites = cat_funcsite_dict[catalyst] # func_sites are the H indices that get replaced with functional groups
+atoms, coords = CD.loadXYZ(xyz_dict[catalyst_site])
+tail = tail_dict[catalyst_site] # tail_dict lists the H's and C's that are part of the "graphitic" region of the catalyst
 # cat_atoms are the atoms that don't get functionalized, but aren't in the tail
-# remove all indices that are in the union of tail and funcsites
-cat_atom_inds = [i for i in range(len(atoms)) if i not in func_sites+tail]
+# remove all indices that are in the union of tail and the substituted sites
+cat_atom_inds = [i for i in range(len(atoms)) if i not in sub_sites+tail]
 
 bond_cut = 1.55
 n = len(cat_atom_inds)
 bonds = []
-bonded_atoms = cat_atom_inds + func_sites
+bonded_atoms = cat_atom_inds + sub_sites
+print(coords)
+print(type(coords))
 for index,i in enumerate(bonded_atoms[:-1]):
     #for j in range(i+1,n):
     for j in bonded_atoms[index+1:]:
+        print(i, j)
         if np.linalg.norm(coords[i,:]-coords[j,:]) < bond_cut:
             bonds.append((i,j))
 
@@ -207,7 +242,7 @@ for bond in bonds:
     #plt.plot([r1[0], r2[0]], [r1[1],r2[1]], [r1[2],r2[2]], '-', color='k', lw=6, zorder=1)
     plt.plot([r1[0], r2[0]], [r1[1],r2[1]], '-', color='k', lw=6, zorder=1)
 
-blend_bonds = blend_dict[catalyst]
+blend_bonds = blend_dict[catalyst_site]
 for bond in blend_bonds:
     r1 = coords[bond[0],:]
     r2 = coords[bond[1],:]
@@ -233,7 +268,7 @@ for i in range(pca_n):
 #arc_angle = 2*np.pi/pca_n
 arc_angle = 360./pca_n
 # Plot all the aggregate functional group effects
-for i,ind in enumerate(func_sites):
+for i,ind in enumerate(sub_sites):
     arcsum = 0.
     for j in range(pca_n):
         #ax.scatter(coords[ind,0]+shift[j,0], coords[ind,1]+shift[j,1], coords[ind,2]+shift[j,2], s=np.abs(xvhs[i,j])*size_scale, \
@@ -253,9 +288,12 @@ for i,ind in enumerate(func_sites):
         #           c=color_list[j] ,marker=marker_dict[np.sign(xvhs[i,j])], zorder=2 )
 
 
+fc = 0.5
 ax.set_axis_off()
 ax.set_xlabel('X')
 ax.set_ylabel('Y')
 #ax.set_zlabel('Z')
-#plt.show()
-plt.savefig("%s_Wedgepca%s.png" % (catalyst, pca_n), transparent=True, bbox_inches='tight', pad_inches=0.05)
+plt.xlim([np.min(coords[:,0])-fc, np.max(coords[:,0])+fc])
+plt.ylim([np.min(coords[:,1])-fc, np.max(coords[:,1])+fc])
+plt.show()
+#plt.savefig("%s_Wedgepca%s.png" % (catalyst, pca_n), transparent=True, bbox_inches='tight', pad_inches=0.05)

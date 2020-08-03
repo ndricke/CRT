@@ -21,7 +21,8 @@ from pylab import rcParams
 
 font = {'size':14}
 mpl.rc('font',**font)
-rcParams['figure.figsize'] = 11,11
+#rcParams['figure.figsize'] = 11,11
+rcParams['figure.figsize'] = 12,20
 
 #catalyst = "mepyr"
 #catalyst = "tetry17"
