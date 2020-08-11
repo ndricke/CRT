@@ -7,6 +7,8 @@ This was nice for the volcano and pair plots, but it probably means there are so
 I can take the set of functional groups that succeeded for all sites, or the set of sites that succeeded for all groups
 or (I like this best) I can eliminate either in such a way as to maximize data for the PCA plot itself
 I still want to see if I can measure the effect of each functional group in an even-handed way
+
+The atom mapping for tetry is all out of order. 
 """
 
 import sys
@@ -81,7 +83,7 @@ xyz_path = "/home/nricke/work/ORRmol/base_xyz_xy/"
 xyz_dict = {"mepyr":xyz_path+"mepyr_optsp_xy_a0m2.xyz", "tetry17":xyz_path+"tetry_optsp_xy_a0m2.xyz", 
             "tetry20":xyz_path+"tetry_optsp_xy_a0m2.xyz", "tetrid":xyz_path+"tetrid_optsp_xy_a0m2.xyz"}
 AS_dict = {"mepyr":18, "tetry17":31, "tetry20":33, "tetrid":38}
-remove_sites = {"tetrid":{38}, "mepyr":{18}, "tetry17":{30}, "tetry20":{30}}
+remove_sites = {"tetrid":{38}, "mepyr":{18}, "tetry17":{33}, "tetry20":{33}}
 remove_funcs = {"tetrid":set(), "mepyr":{"N", "Cl", "nitroso"}, "tetry17":set(), "tetry20":set()}
 
 # Plotting settings
@@ -98,14 +100,20 @@ df["O2_O2H"] = (df["Esolv_O2H"] - df["Esolv_O2"] - rxn_energies["O2_O2H"])*Ht2eV
 df["O2H_O"] = (df["Esolv_O"] - df["Esolv_O2H"] - rxn_energies["O2H_O"])*Ht2eV
 df["O_OH"] = (df["Esolv_OH"] - df["Esolv_O"] - rxn_energies["O_OH"])*Ht2eV
 df["OH_None"] = (df["Esolv_bare"] - df["Esolv_OH"] - rxn_energies["OH_None"])*Ht2eV
+
 # these are all 1-site modifications, so convert the lists to values for ease of use
 df.loc[:, "func_loc"] = df.loc_O2.map(lambda x: x[0])
 df.loc[:, "func"] = df.func_O2.map(lambda x: x[0])
+# re-mapping tetry
+tetry_remap = {32:35, 24:27, 28:31, 25:28, 15:14, 31:34, 30:33, 29:32, 24:27} # XXX still need to complete
+if catalyst == "tetry":
+    df.loc[:, "func_loc"] = df.func_loc.map(tetry_remap)
 
 print("Unique Funcs: ", df.func.unique())
 print("Unique Subs: ", df.func_loc.unique())
 print(rxn_energies)
 print(df[["None_O2", "O2_O2H", "O2H_O", "O_OH", "OH_None"]])
+
 
 # For the grid of functional groups and substitutions, check where data is missing
 # Each sub should have all the funcs, each func should have all the subs
@@ -154,6 +162,8 @@ fg_array = np.zeros((len(sub_set), subreact_count*func_num))
 sub_sites = list(sub_set)
 for i, sub in enumerate(sub_sites):
     for j, func in enumerate(list(func_set)):
+        print(sub, func)
+        print(df[(df["func"] == func) & (df["func_loc"] == sub)])
         row = df[(df["func"] == func) & (df["func_loc"] == sub)].iloc[0]
         fg_array[i,j] = row["None_O2"]
         fg_array[i,j+func_num] = row["O2_O2H"]
@@ -281,19 +291,22 @@ for i,ind in enumerate(sub_sites):
         th1 = arcsum
         th2 = arcsum + arc
         arcsum += arc
-        wed = patches.Wedge(coords[ind,:2], r=wsize*0.4, theta1=th1, theta2=th2, zorder=2, color=color_list[j])
+        wed = patches.Wedge(coords[ind,:2], r=wsize*0.3, theta1=th1, theta2=th2, zorder=2, color=color_list[j])
         ax.add_patch(wed)
 
         #(coords[ind,0]+shift[j,0], coords[ind,1]+shift[j,1], s=np.abs(xvhs[i,j])*size_scale, \
         #           c=color_list[j] ,marker=marker_dict[np.sign(xvhs[i,j])], zorder=2 )
 
 
-fc = 0.5
+fc = 0.6
 ax.set_axis_off()
 ax.set_xlabel('X')
 ax.set_ylabel('Y')
 #ax.set_zlabel('Z')
 plt.xlim([np.min(coords[:,0])-fc, np.max(coords[:,0])+fc])
 plt.ylim([np.min(coords[:,1])-fc, np.max(coords[:,1])+fc])
-plt.show()
-#plt.savefig("%s_Wedgepca%s.png" % (catalyst, pca_n), transparent=True, bbox_inches='tight', pad_inches=0.05)
+#plt.show()
+if catalyst == "tetry":
+    plt.savefig("%s%s_Wedgepca%s.png" % (catalyst, bound_site, pca_n), transparent=True, bbox_inches='tight', pad_inches=0.05)
+else:
+    plt.savefig("%s_Wedgepca%s.png" % (catalyst, pca_n), transparent=True, bbox_inches='tight', pad_inches=0.05)
