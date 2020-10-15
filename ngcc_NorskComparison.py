@@ -46,9 +46,11 @@ df = CatO2Df.AddReactionEnergiesORR(df)
 df = df.assign(bare_to_OOH = df["O2_binding_energy"] + df["O2_to_OOH"])
 df["bare_to_OOH"] -= df["bare_to_OOH"].mean()
 df["OH_to_bare"] -= df["OH_to_bare"].mean()
-
-
 df["OH_to_bare"] *= -1. # Reverse reaction, such that it's R --> R-OH
+
+# Shift free energy by number of electrons yet transferred
+df["OH_to_bare"] += 1.23
+df["bare_to_OOH"] += 1.23*4
 
 #norsk = np.loadtxt("NorskReview_Scaling.csv", delimiter=",")
 norsk = pd.read_csv("NorskReview_Scaling.csv", names=["OH", "OOH"])
