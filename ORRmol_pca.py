@@ -62,8 +62,8 @@ rcParams['figure.figsize'] = 15,11
 #catalyst_site = catalyst
 
 catalyst = "tetry"
-#bound_site = "17"
-bound_site = "20"
+bound_site = "17"
+#bound_site = "20"
 catalyst_site = catalyst+bound_site
 
 Ht2eV = 27.211
@@ -83,8 +83,8 @@ xyz_path = "/home/nricke/work/ORRmol/base_xyz_xy/"
 xyz_dict = {"mepyr":xyz_path+"mepyr_optsp_xy_a0m2.xyz", "tetry17":xyz_path+"tetry_optsp_xy_a0m2.xyz", 
             "tetry20":xyz_path+"tetry_optsp_xy_a0m2.xyz", "tetrid":xyz_path+"tetrid_optsp_xy_a0m2.xyz"}
 AS_dict = {"mepyr":18, "tetry17":31, "tetry20":33, "tetrid":38}
-remove_sites = {"tetrid":{38}, "mepyr":{18}, "tetry17":{33}, "tetry20":{33}}
-remove_funcs = {"tetrid":set(), "mepyr":{"N", "Cl", "nitroso"}, "tetry17":set(), "tetry20":set()}
+remove_sites = {"tetrid":{38}, "mepyr":{18}, "tetry17":{31}, "tetry20":{33}}
+remove_funcs = {"tetrid":set(), "mepyr":{"N", "Cl", "nitroso"}, "tetry17":set(["C=O"]), "tetry20":set(["C=O"])}
 
 # Plotting settings
 marker_dict = {1:"v", -1:"D"}
@@ -104,8 +104,9 @@ df["OH_None"] = (df["Esolv_bare"] - df["Esolv_OH"] - rxn_energies["OH_None"])*Ht
 # these are all 1-site modifications, so convert the lists to values for ease of use
 df.loc[:, "func_loc"] = df.loc_O2.map(lambda x: x[0])
 df.loc[:, "func"] = df.func_O2.map(lambda x: x[0])
-# re-mapping tetry
-tetry_remap = {32:35, 24:27, 28:31, 25:28, 15:14, 31:34, 30:33, 29:32, 24:27} # XXX still need to complete
+
+# re-mapping tetry atoms, as these are different between the base and the derivitized molecules
+tetry_remap = {32:35, 24:27, 28:31, 25:28, 15:14, 31:34, 30:33, 29:32} # XXX still need to complete
 if catalyst == "tetry":
     df.loc[:, "func_loc"] = df.func_loc.map(tetry_remap)
 
@@ -142,11 +143,12 @@ res = list(set.intersection(*map(set, func_list)))
 print()
 print(res)
 
-#sys.exit(-1)
-
 # remove difficult functional groups and substitutions
-sub_set = set(df.func_loc.unique()); func_set = set(df.func.unique())
+sub_set = set(df.func_loc.unique())
 sub_set -= remove_sites[catalyst_site]
+func_set = set(df.func.unique())
+
+print(remove_funcs[catalyst_site])
 func_set -= remove_funcs[catalyst_site]
 
 print()
@@ -157,7 +159,7 @@ print(func_set)
 func_num = len(func_set)
 subreact_count = 5  # 5 intermediate steps in the ORR cycle
 print(subreact_count, func_num)
-fg_array = np.zeros((len(sub_set), subreact_count*func_num))
+fg_array = np.zeros((len(sub_set), subreact_count*func_num))  # rows: substitution sites, columns: (func groups)*(intermediates)
 
 sub_sites = list(sub_set)
 for i, sub in enumerate(sub_sites):
@@ -302,7 +304,6 @@ fc = 0.6
 ax.set_axis_off()
 ax.set_xlabel('X')
 ax.set_ylabel('Y')
-#ax.set_zlabel('Z')
 plt.xlim([np.min(coords[:,0])-fc, np.max(coords[:,0])+fc])
 plt.ylim([np.min(coords[:,1])-fc, np.max(coords[:,1])+fc])
 #plt.show()
