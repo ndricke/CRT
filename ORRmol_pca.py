@@ -93,17 +93,10 @@ color_list = ['green', 'magenta', 'goldenrod']
 df_unmod = pd.read_csv("~/work/ORRmol/dGform_catalysts/ngcc_gform.csv", index_col=0) # load unmodified catalyst data
 df_unmod = df_unmod[df_unmod["Catalyst"] == catalyst]
 rxn_energies = reform_gform(df_unmod, catalyst, bound_site)
+
+# This used to do the intermediate free energy calculation here, but those have been moved to catdata_dGrxn.json to avoid repeating
 df = pd.read_json("~/work/ORRmol/ngcc_func/catdata_dGrxn.json")
 df = df[df["Catalyst"] == catalyst]
-df["None_O2"] = (df["Esolv_O2"] - df["Esolv_bare"] - rxn_energies["None_O2"])*Ht2eV
-df["O2_O2H"] = (df["Esolv_O2H"] - df["Esolv_O2"] - rxn_energies["O2_O2H"])*Ht2eV
-df["O2H_O"] = (df["Esolv_O"] - df["Esolv_O2H"] - rxn_energies["O2H_O"])*Ht2eV
-df["O_OH"] = (df["Esolv_OH"] - df["Esolv_O"] - rxn_energies["O_OH"])*Ht2eV
-df["OH_None"] = (df["Esolv_bare"] - df["Esolv_OH"] - rxn_energies["OH_None"])*Ht2eV
-
-# these are all 1-site modifications, so convert the lists to values for ease of use
-df.loc[:, "func_loc"] = df.loc_O2.map(lambda x: x[0])
-df.loc[:, "func"] = df.func_O2.map(lambda x: x[0])
 
 # re-mapping tetry atoms, as these are different between the base and the derivitized molecules
 tetry_remap = {32:35, 24:27, 28:31, 25:28, 15:14, 31:34, 30:33, 29:32} # XXX still need to complete
