@@ -26,7 +26,7 @@ replacements = {"dGrxn_O2":r"$R \rightarrow R-O_2$",
                 "dGrxn_OH": r"$R-O \rightarrow R-OH$",
                 "dGrxn_regen": r"$R-OH \rightarrow R$"}
 
-tetry_only = True
+tetry_only = False
 combine_O2_O2H = True
 
 # tetry_AS active site 20, O_intermediate break apart: 2, 4, 5, 6, 7, 
@@ -78,5 +78,5 @@ for i in range(len(cols)):
 
 pair_plt._legend.set_title("Catalysts")
 #plt.show()
-#plt.savefig("ORRmol_ngcc_catalysts4step_pairplot.png", transparent=True, bbox_inches='tight', pad_inches=1.02)
-plt.savefig("ORRmol_ngcc_tetry4step.png", transparent=True, bbox_inches='tight', pad_inches=1.02)
+plt.savefig("ORRmol_ngcc_catalysts4step_pairplot.png", transparent=True, bbox_inches='tight', pad_inches=1.02)
+#plt.savefig("ORRmol_ngcc_tetry4step.png", transparent=True, bbox_inches='tight', pad_inches=1.02)

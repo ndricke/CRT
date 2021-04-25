@@ -11,12 +11,14 @@ so just take the difference between dGrxn(0 --> i) values, as the dG(0) will eac
 
 Ht2eV = 27.211399
 kC2eV = 1/23.06054195 
-CN_shift = 4.42 # -1.292 + 4.42
+CN_shift = 0.0 # -1.292 + 4.42
 CO_shift = 0.0 # -1.422
 
 df = pd.read_json("~/work/ORRmol/cycleFe_func/cycleFe_GeoConv_CNCO_IntMerge.json")
 df = df[df["Filename_O2"] != "porphyrinFe-functionalized95O2_optcdftsp_a0m1.out"]  # bare didn't converge
 df = df[df["Filename_O2"] != "nanFe-functionalized2O2_optcdftsp_a0m1.out"]  # bare didn't converge
+df = df[df["Filename_O2"] != "nanFe-functionalized96O2_optcdftsp_a0m1.out"]  # bare didn't converge
+
 df.rename(columns={"Esolv_bare_O":"Esolv_bare"}, inplace=True)
 df.Catalyst = df.Catalyst.str.replace("-functionalized", "")
 df.Catalyst = df.Catalyst.str.replace("porphyrin", "por")
@@ -35,13 +37,13 @@ df_gform = pd.read_csv("~/work/ORRmol/dGform_catalysts/gform_IntermediateColumns
 df_gform.replace("None", np.nan, inplace=True)
 print(df)
 
-df_gform["dGrxn_corr_O2"] = df_gform["dGrxn_O2"] - df_gform["E_O2"] - df_gform["E"]
+df_gform["dGrxn_corr_O2"] = df_gform["dGrxn_O2"] - Ht2eV*(df_gform["E_O2"] - df_gform["E"])
 df_gform["dGrxn_corr_O2H"] = df_gform["dGrxn_O2H"] - Ht2eV*(df_gform["E_O2H"]-df_gform["E"])
 df_gform["dGrxn_corr_O"] = df_gform["dGrxn_O"] - Ht2eV*(df_gform["E_O"] - df_gform["E_O2H"])
 df_gform["dGrxn_corr_OH"] = df_gform["dGrxn_OH"] - Ht2eV*(df_gform["E_OH"] - df_gform["E_O"])
 df_gform["dGrxn_corr_regen"] = df_gform["dGrxn"] - Ht2eV*(df_gform["E"] - df_gform["E_OH"])
-df_gform["dGrxn_corr_CN"] = df_gform["dGrxn_CN"] - df_gform["E_CN"] - df_gform["E"]
-df_gform["dGrxn_corr_CO"] = df_gform["dGrxn_CO"] - df_gform["E_CO"] - df_gform["E"]
+df_gform["dGrxn_corr_CN"] = df_gform["dGrxn_CN"] - Ht2eV*(df_gform["E_CN"] - df_gform["E"])
+df_gform["dGrxn_corr_CO"] = df_gform["dGrxn_CO"] - Ht2eV*(df_gform["E_CO"] - df_gform["E"])
 
 dfm = df.merge(df_gform[["Catalyst", "dGrxn_corr_O2","dGrxn_corr_O2H","dGrxn_corr_O","dGrxn_corr_OH",
     "dGrxn_corr_regen", "dGrxn_corr_CN", "dGrxn_corr_CO"]], 

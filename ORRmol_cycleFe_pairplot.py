@@ -19,11 +19,10 @@ mpl.rc('font',**font)
 
 combine_O2_O2H = False
 #cols = ["dGrxn_O2", "dGrxn_O2H", "dGrxn_O", "dGrxn_OH", "dGrxn_regen", "dGrxn_CN", "dGrxn_CO"]
-cols = ["dGrxn_tO2H", "dGrxn_O", "dGrxn_OH", "dGrxn_regen", "dGrxn_CN", "dGrxn_CO"]
+cols = ["dGrxn_O2H", "dGrxn_O", "dGrxn_OH", "dGrxn_regen", "dGrxn_CN", "dGrxn_CO"]
 geo_conv_columns = ["GeometryConverged_bare_O2H", "GeometryConverged_O2H", "GeometryConverged_O", "GeometryConverged_OH", "GeometryConverged_CO", "GeometryConverged_CN"]
 replacements = {"dGrxn_O2":r"$R \rightarrow R-O_2$",
-                "dGrxn_tO2H":r"$R \rightarrow R-O_2H$",
-                "dGrxn_O2H":r"$R-O_2 \rightarrow R-O_2H$",
+                "dGrxn_O2H":r"$R \rightarrow R-O_2H$",
                 "dGrxn_O": r"$R-O_2H \rightarrow R-O$",
                 "dGrxn_OH": r"$R-O \rightarrow R-OH$",
                 "dGrxn_CO": r"$R \rightarrow R-CO$",
@@ -64,5 +63,5 @@ for i in range(len(cols)):
             pair_plt.axes[i][j].set_ylabel(replacements[ylabel])
 
 pair_plt._legend.set_title("Catalysts")
-plt.show()
-#plt.savefig("ORRmol_cycleFes_pairplot.png", transparent=True, bbox_inches='tight', pad_inches=1.02)
+#plt.show()
+plt.savefig("ORRmol_cycleFes_pairplot.png", transparent=True, bbox_inches='tight', pad_inches=1.02)
