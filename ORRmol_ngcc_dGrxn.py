@@ -22,7 +22,8 @@ df.rename(columns={"Catalyst_O2":"Catalyst", "Esolv_bare_O":"Esolv_bare"}, inpla
 df.loc[(df["Bound_site"] == 17.0) & (df["Catalyst"] == "tetry"), ["Catalyst"]] = "tetry-17"
 df.loc[(df["Bound_site"] == 20.0) & (df["Catalyst"] == "tetry"), ["Catalyst"]] = "tetry-20"
 
-df_gform = pd.read_csv("~/work/ORRmol/dGform_catalysts/gform_IntermediateColumns.csv")
+#df_gform = pd.read_csv("~/work/ORRmol/dGform_catalysts/gform_IntermediateColumns.csv")
+df_gform = pd.read_csv("~/work/ORRmol/dGform_catalysts/gform_reshape.csv")
 df_gform.replace("None", np.nan, inplace=True)
 print(df)
 
@@ -50,4 +51,4 @@ dfm["dGrxn_regen"] = Ht2eV*(dfm["Esolv_bare"]-dfm["Esolv_OH"]) + dfm["dGrxn_corr
 print(dfm[["dGrxn_O2H","dGrxn_O","dGrxn_OH", "dGrxn_regen"]])
 print(dfm[["dGrxn_O2H","dGrxn_O","dGrxn_OH", "dGrxn_regen"]].sum(axis=1))
 print(dfm.columns)
-#dfm.to_json("catdata_ngcc_dGrxn.json")
+dfm.to_json("catdata_ngcc_dGrxn.json")
