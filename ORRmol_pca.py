@@ -9,6 +9,9 @@ or (I like this best) I can eliminate either in such a way as to maximize data f
 I still want to see if I can measure the effect of each functional group in an even-handed way
 
 The atom mapping for tetry is all out of order. 
+
+TODO:
+add -17 and -20 to catalyst names in functionalized energy dataframe for tetry
 """
 
 import sys
@@ -56,57 +59,94 @@ mpl.rc('font',**font)
 #rcParams['figure.figsize'] = 20,11
 rcParams['figure.figsize'] = 15,11
 
-#catalyst = "mepyr"
+catalyst = "mepyr"
 #catalyst = "tetrid"
-#bound_site = None
-#catalyst_site = catalyst
+bound_site = None
+catalyst_site = catalyst
 
-catalyst = "tetry"
-bound_site = "17"
-#bound_site = "20"
-catalyst_site = catalyst+bound_site
+#catalyst = "tetry"
+##bound_site = 17
+#bound_site = 20
+#catalyst_site = catalyst+"-"+str(bound_site)  # to properly merge with the unfunctionalized catalyst later
 
 Ht2eV = 27.211
 pca_n = 3
-size_scale = 1000
+size_scale = 0.6
+
+#reaction_cols = ["dGrxn_O2H", "dGrxn_O", "dGrxn_OH", "dGrxn_regen"]
+reaction_cols = ["None_O2H", "O2H_O", "O_OH", "OH_None"]
 func_labels =['CHO', r'OCH$_3$', r'CH$_2$NH$_2$', r'CF$_3$', r'CH$_3$', r'NH$_2$', 'OH', 'F', 'Cl', 'Br', 'CN']
 diff_dict = {"O":"O_diff", "O2H":"O2H_diff", "OH":"OH_diff", "O2":"O2_binding_energy"}
 atom_dict = {'C':'k','N':'b','F':'r','H':'gray'}
-tail_dict = {"mepyr":list(range(2,6))+list(range(10,14)), "tetry17":list(range(18,26)), "tetry20":list(range(18,26)), 
+tail_dict = {"mepyr":list(range(2,6))+list(range(10,14)), "tetry-17":list(range(18,26)), "tetry-20":list(range(18,26)), 
                 "tetrid":list(range(21,29))}
 
-
 # blend tails (0-index):
-blend_dict = {"mepyr":[[2,1],[5,6]], "tetry17":[[18,4], [21,3]], "tetry20":[[18,4], [21,3]], "tetrid":[[21,4], [24,3]]}
+blend_dict = {"mepyr":[[2,1],[5,6]], "tetry-17":[[18,4], [21,3]], "tetry-20":[[18,4], [21,3]], "tetrid":[[21,4], [24,3]]}
 # Location of xyz file for base catalyst
 xyz_path = "/home/nricke/work/ORRmol/base_xyz_xy/"
-xyz_dict = {"mepyr":xyz_path+"mepyr_optsp_xy_a0m2.xyz", "tetry17":xyz_path+"tetry_optsp_xy_a0m2.xyz", 
-            "tetry20":xyz_path+"tetry_optsp_xy_a0m2.xyz", "tetrid":xyz_path+"tetrid_optsp_xy_a0m2.xyz"}
-AS_dict = {"mepyr":18, "tetry17":31, "tetry20":33, "tetrid":38}
-remove_sites = {"tetrid":{38}, "mepyr":{18}, "tetry17":{31}, "tetry20":{33}}
-remove_funcs = {"tetrid":set(), "mepyr":{"N", "Cl", "nitroso"}, "tetry17":set(["C=O"]), "tetry20":set(["C=O"])}
+xyz_dict = {"mepyr":xyz_path+"mepyr_optsp_xy_a0m2.xyz", "tetry-17":xyz_path+"tetry_optsp_xy_a0m2.xyz", 
+            "tetry-20":xyz_path+"tetry_optsp_xy_a0m2.xyz", "tetrid":xyz_path+"tetrid_optsp_xy_a0m2.xyz"}
+AS_dict = {"mepyr":18, "tetry-17":31, "tetry-20":33, "tetrid":38}
+remove_sites = {"tetrid":{38}, "mepyr":{18}, "tetry-17":{31, 35}, "tetry-20":{33}}
+remove_funcs = {"tetrid":{"C=O", "OC", "N"}, "mepyr":{"N", "Cl", "nitroso"}, "tetry-17":set(["C=O","OC","N"]), "tetry-20":set(["C=O","OC","N"])}
 
 # Plotting settings
 marker_dict = {1:"v", -1:"D"}
 color_list = ['green', 'magenta', 'goldenrod']
 
-df_unmod = pd.read_csv("~/work/ORRmol/dGform_catalysts/ngcc_gform.csv", index_col=0) # load unmodified catalyst data
-df_unmod = df_unmod[df_unmod["Catalyst"] == catalyst]
-rxn_energies = reform_gform(df_unmod, catalyst, bound_site)
+df_unmod = pd.read_csv("~/work/ORRmol/dGform_catalysts/gform_reshape.csv") # load unmodified catalyst data
+df_unmod = df_unmod[df_unmod["Catalyst"] == catalyst_site]
+#rxn_energies = reform_gform(df_unmod, catalyst, bound_site)
 
-# This used to do the intermediate free energy calculation here, but those have been moved to catdata_dGrxn.json to avoid repeating
 df = pd.read_json("~/work/ORRmol/ngcc_func/catdata_dGrxn.json")
 df = df[df["Catalyst"] == catalyst]
+if catalyst == "tetry":  # consider only one bound site at a time
+    df = df[df["Bound_site"] == bound_site]
+    df["Catalyst"] = catalyst_site
+df["func"] = df["func_O2"].str[0]
+df["func_loc"] = df["loc_O2"].str[0]
+
+df_unmod = df_unmod.add_suffix("_base")
+df = df.merge(df_unmod, left_on="Catalyst", right_on="Catalyst_base")
+# We don't need to consider free energy changes because all we care about are the energy shifts
+# and we never ran freq calculations for all of the derivatives, so the dGrxn shifts came from the base anyway, and cancels
+df["None_O2H"] = 27.211*(df["Esolv_O2H"] - df["Esolv_bare_O2"] - (df["E_O2H_base"] - df["E_base"]))
+df["O2H_O"] = 27.211*(df["Esolv_O"] - df["Esolv_O2H"] - (df["E_O_base"] - df["E_O2H_base"]))
+df["O_OH"] = 27.211*(df["Esolv_OH"] - df["Esolv_O"] - (df["E_OH_base"] - df["E_O_base"]))
+df["OH_None"] = 27.211*(df["Esolv_bare_O2"] - df["Esolv_OH"] - (df["E_base"] - df["E_OH_base"]))
+df.to_csv("catdata_dGrxn_"+catalyst_site+".csv")
+
+# Get absolute value of difference from base catalyst
+df["None_O2H"] = np.abs(df["None_O2H"])
+df["O2H_O"] = np.abs(df["O2H_O"])
+df["O_OH"] = np.abs(df["O_OH"])
+df["OH_None"] = np.abs(df["OH_None"])
+
+"""
+The PCA figure for tetry-17 is in the wrong place. This should be handled by the AS_dict (unused), 
+but it also indicates that whatever is being plotted at the active site should be somewhere else, too. 
+remove_sites is used, and it should at least prevent stuff from being plotted on the active site
+
+The traditional numbering for tetry is 17 (para), 20 (ortho).
+for tetry, 18 (para) and 26 (ortho) are the active carbons of the derivatized molecule. H's 28 (para) and 30 (ortho)
+for the base tetry, these C's are 18 (para) and 31 (ortho). The H's are 32 (para) & 34 (ortho)
+
+func_loc of 28 is the tetry-17 active site. For some reason 32 is also bad
+30 is the func_loc for tetry-20
+
+Check signs on the PCA, and whether we should consider absolute value or variance
+Also need functional group effects as a table
+"""
 
 # re-mapping tetry atoms, as these are different between the base and the derivitized molecules
-tetry_remap = {32:35, 24:27, 28:31, 25:28, 15:14, 31:34, 30:33, 29:32} # XXX still need to complete
+tetry_remap = {32:35, 24:27, 28:31, 25:28, 15:14, 31:34, 30:33, 29:32}
 if catalyst == "tetry":
     df.loc[:, "func_loc"] = df.func_loc.map(tetry_remap)
 
 print("Unique Funcs: ", df.func.unique())
 print("Unique Subs: ", df.func_loc.unique())
-print(rxn_energies)
-print(df[["None_O2", "O2_O2H", "O2H_O", "O_OH", "OH_None"]])
+print(df[reaction_cols])
 
 
 # For the grid of functional groups and substitutions, check where data is missing
@@ -150,7 +190,7 @@ print(func_set)
 
 # Generate matrix of functional group effects on reaction step
 func_num = len(func_set)
-subreact_count = 5  # 5 intermediate steps in the ORR cycle
+subreact_count = 4  # 5 intermediate steps in the ORR cycle, but here merging O2 and O2H
 print(subreact_count, func_num)
 fg_array = np.zeros((len(sub_set), subreact_count*func_num))  # rows: substitution sites, columns: (func groups)*(intermediates)
 
@@ -160,11 +200,11 @@ for i, sub in enumerate(sub_sites):
         print(sub, func)
         print(df[(df["func"] == func) & (df["func_loc"] == sub)])
         row = df[(df["func"] == func) & (df["func_loc"] == sub)].iloc[0]
-        fg_array[i,j] = row["None_O2"]
-        fg_array[i,j+func_num] = row["O2_O2H"]
-        fg_array[i,j+2*func_num] = row["O2H_O"]
-        fg_array[i,j+3*func_num] = row["O_OH"]
-        fg_array[i,j+4*func_num] = row["OH_None"]
+        #fg_array[i,j] = row["None_O2"]
+        fg_array[i,j] = row["None_O2H"]
+        fg_array[i,j+func_num] = row["O2H_O"]
+        fg_array[i,j+2*func_num] = row["O_OH"]
+        fg_array[i,j+3*func_num] = row["OH_None"]
 
 
 print("FuncGroup Array:")
@@ -173,7 +213,7 @@ print(fg_array)
 test_idx = 1
 print()
 print(fg_array[test_idx,:])
-print(df[df["func_loc"] == list(sub_set)[test_idx]][["None_O2", "O2_O2H", "O2H_O", "O_OH", "OH_None"]])
+print(df[df["func_loc"] == list(sub_set)[test_idx]][reaction_cols])
 
 
 # Do I just directly PCA the FuncGroup-Site array?
@@ -223,8 +263,6 @@ bond_cut = 1.55
 n = len(cat_atom_inds)
 bonds = []
 bonded_atoms = cat_atom_inds + sub_sites
-print(coords)
-print(type(coords))
 for index,i in enumerate(bonded_atoms[:-1]):
     #for j in range(i+1,n):
     for j in bonded_atoms[index+1:]:
@@ -257,7 +295,7 @@ for bond in blend_bonds:
 for i,ind in enumerate(cat_atom_inds):
     #ax.scatter(coords[ind,0], coords[ind,1],coords[ind,2],s=1000, \
     #           c=a_atom_color[i],marker="o")
-    ax.scatter(coords[ind,0], coords[ind,1], s=1000, \
+    ax.scatter(coords[ind,0], coords[ind,1], s=2000, \
                c=a_atom_color[i], marker="o", zorder=2)
 
 
@@ -286,14 +324,14 @@ for i,ind in enumerate(sub_sites):
         th1 = arcsum
         th2 = arcsum + arc
         arcsum += arc
-        wed = patches.Wedge(coords[ind,:2], r=wsize*0.3, theta1=th1, theta2=th2, zorder=2, color=color_list[j])
+        wed = patches.Wedge(coords[ind,:2], r=wsize*size_scale, theta1=th1, theta2=th2, zorder=2, color=color_list[j])
         ax.add_patch(wed)
 
         #(coords[ind,0]+shift[j,0], coords[ind,1]+shift[j,1], s=np.abs(xvhs[i,j])*size_scale, \
         #           c=color_list[j] ,marker=marker_dict[np.sign(xvhs[i,j])], zorder=2 )
 
 
-fc = 0.6
+fc = 0.7
 ax.set_axis_off()
 ax.set_xlabel('X')
 ax.set_ylabel('Y')
