@@ -59,15 +59,20 @@ mpl.rc('font',**font)
 #rcParams['figure.figsize'] = 20,11
 rcParams['figure.figsize'] = 15,11
 
-catalyst = "mepyr"
+#catalyst = "mepyr"
 #catalyst = "tetrid"
-bound_site = None
-catalyst_site = catalyst
+#bound_site = None
+#catalyst_site = catalyst
 
-#catalyst = "tetry"
-##bound_site = 17
+catalyst = "tetry"
+bound_site = 17
 #bound_site = 20
-#catalyst_site = catalyst+"-"+str(bound_site)  # to properly merge with the unfunctionalized catalyst later
+catalyst_site = catalyst+"-"+str(bound_site)  # to properly merge with the unfunctionalized catalyst later
+
+if catalyst == "mepyr":
+    scatter_size = 2000
+else:
+    scatter_size = 1000
 
 Ht2eV = 27.211
 pca_n = 3
@@ -115,13 +120,13 @@ df["None_O2H"] = 27.211*(df["Esolv_O2H"] - df["Esolv_bare_O2"] - (df["E_O2H_base
 df["O2H_O"] = 27.211*(df["Esolv_O"] - df["Esolv_O2H"] - (df["E_O_base"] - df["E_O2H_base"]))
 df["O_OH"] = 27.211*(df["Esolv_OH"] - df["Esolv_O"] - (df["E_OH_base"] - df["E_O_base"]))
 df["OH_None"] = 27.211*(df["Esolv_bare_O2"] - df["Esolv_OH"] - (df["E_base"] - df["E_OH_base"]))
-df.to_csv("catdata_dGrxn_"+catalyst_site+".csv")
+#df.to_csv("catdata_dGrxn_"+catalyst_site+".csv")
 
 # Get absolute value of difference from base catalyst
-df["None_O2H"] = np.abs(df["None_O2H"])
-df["O2H_O"] = np.abs(df["O2H_O"])
-df["O_OH"] = np.abs(df["O_OH"])
-df["OH_None"] = np.abs(df["OH_None"])
+#df["None_O2H"] = np.abs(df["None_O2H"])
+#df["O2H_O"] = np.abs(df["O2H_O"])
+#df["O_OH"] = np.abs(df["O_OH"])
+#df["OH_None"] = np.abs(df["OH_None"])
 
 """
 The PCA figure for tetry-17 is in the wrong place. This should be handled by the AS_dict (unused), 
@@ -186,7 +191,9 @@ func_set -= remove_funcs[catalyst_site]
 
 print()
 print(sub_set)
-print(func_set)
+
+func_set_list = list(func_set)
+print(func_set_list)
 
 # Generate matrix of functional group effects on reaction step
 func_num = len(func_set)
@@ -196,7 +203,7 @@ fg_array = np.zeros((len(sub_set), subreact_count*func_num))  # rows: substituti
 
 sub_sites = list(sub_set)
 for i, sub in enumerate(sub_sites):
-    for j, func in enumerate(list(func_set)):
+    for j, func in enumerate(func_set_list):
         print(sub, func)
         print(df[(df["func"] == func) & (df["func_loc"] == sub)])
         row = df[(df["func"] == func) & (df["func_loc"] == sub)].iloc[0]
@@ -205,6 +212,7 @@ for i, sub in enumerate(sub_sites):
         fg_array[i,j+func_num] = row["O2H_O"]
         fg_array[i,j+2*func_num] = row["O_OH"]
         fg_array[i,j+3*func_num] = row["OH_None"]
+        #fg_array[i,j] = row["OH_None"]
 
 
 print("FuncGroup Array:")
@@ -245,6 +253,7 @@ print(xvhs)
 for i in range(pca_n):
     print("PCA component %s:" %i, np.linalg.norm(xvhs[:,i]))
 
+np.savetxt("%s_fg.csv" % (catalyst_site), fg_array, delimiter=',')
 #np.savetxt("%s_pca%s_vecs.csv" % (catalyst, pca_n), vh_s.T, delimiter=',')
 #sys.exit(-1)
 
@@ -295,7 +304,7 @@ for bond in blend_bonds:
 for i,ind in enumerate(cat_atom_inds):
     #ax.scatter(coords[ind,0], coords[ind,1],coords[ind,2],s=1000, \
     #           c=a_atom_color[i],marker="o")
-    ax.scatter(coords[ind,0], coords[ind,1], s=2000, \
+    ax.scatter(coords[ind,0], coords[ind,1], s=scatter_size, \
                c=a_atom_color[i], marker="o", zorder=2)
 
 
@@ -339,6 +348,6 @@ plt.xlim([np.min(coords[:,0])-fc, np.max(coords[:,0])+fc])
 plt.ylim([np.min(coords[:,1])-fc, np.max(coords[:,1])+fc])
 #plt.show()
 if catalyst == "tetry":
-    plt.savefig("%s%s_Wedgepca%s.png" % (catalyst, bound_site, pca_n), transparent=True, bbox_inches='tight', pad_inches=0.05)
+    plt.savefig("%s%s_SignedWedgepca%s.png" % (catalyst, bound_site, pca_n), transparent=True, bbox_inches='tight', pad_inches=0.05)
 else:
-    plt.savefig("%s_Wedgepca%s.png" % (catalyst, pca_n), transparent=True, bbox_inches='tight', pad_inches=0.05)
+    plt.savefig("%s_SignedWedgepca%s.png" % (catalyst, pca_n), transparent=True, bbox_inches='tight', pad_inches=0.05)

@@ -23,7 +23,7 @@ df.loc[(df["Bound_site"] == 17.0) & (df["Catalyst"] == "tetry"), ["Catalyst"]] =
 df.loc[(df["Bound_site"] == 20.0) & (df["Catalyst"] == "tetry"), ["Catalyst"]] = "tetry-20"
 
 #df_gform = pd.read_csv("~/work/ORRmol/dGform_catalysts/gform_IntermediateColumns.csv")
-df_gform = pd.read_csv("~/work/ORRmol/dGform_catalysts/gform_reshape.csv")
+df_gform = pd.read_csv("~/work/ORRmol/dGform_catalysts/gform_reshape_631gp.csv")
 df_gform.replace("None", np.nan, inplace=True)
 print(df)
 

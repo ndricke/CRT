@@ -46,7 +46,8 @@ mpl.rc('font',**font)
 save_columns = ["Catalyst", "dGrxn_O2H", "dGrxn_regen"]
 
 #df_ngcc = pd.read_json("~/work/ORRmol/ngcc_func/catdata_dGrxn.json")  # an older version of free energy calcs, likely errors
-df_ngcc = pd.read_json("~/work/ORRmol/ngcc_func/catdata_ngcc_dGrxn.json")  # free energy solely from DFT output.
+#df_ngcc = pd.read_json("~/work/ORRmol/ngcc_func/catdata_ngcc_dGrxn.json")  # free energy solely from DFT output.
+df_ngcc = pd.read_json("catdata_ngcc_dGrxn.json")  # free energy solely from DFT output.
 #df_cycleFe = pd.read_json("~/work/ORRmol/cycleFe_func/cycleFe_catcycle_NorskConv_dGrxn.json")
 df_cycleFe = pd.read_json("~/work/ORRmol/cycleFe_func/catdata_cycleFe_dGrxn.json")
 
@@ -55,8 +56,8 @@ norsk["OOH"] -= 4.92
 norsk["OH"] *= -1
 #xbound = [-1,3]
 #ybound = [1.5,5.5]
-xbound = [-2.,1.]
-ybound = [-3,-0.5]
+xbound = [-2.,0.5]
+ybound = [-3,0]
 
 # Calc reaction for merging steps 1 and 2, in the way done in Norskov papers
 #df_ngcc["dGrxn_tO2H"] = df_ngcc["dGrxn_O2"] + df_ngcc["dGrxn_O2H"]  # for older versions where ngcc O2, O2H hadn't been combined
