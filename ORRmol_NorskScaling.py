@@ -62,7 +62,8 @@ ybound = [-3,0]
 # Calc reaction for merging steps 1 and 2, in the way done in Norskov papers
 #df_ngcc["dGrxn_tO2H"] = df_ngcc["dGrxn_O2"] + df_ngcc["dGrxn_O2H"]  # for older versions where ngcc O2, O2H hadn't been combined
 #df_ngcc["dGrxn_tO2H"] = df_ngcc["dGrxn_O2H"]
-df = pd.concat([df_ngcc[save_columns], df_cycleFe[save_columns]])
+#df = pd.concat([df_ngcc[save_columns], df_cycleFe[save_columns]])
+df = df_ngcc[save_columns]
 
 # Shift free energy by number of electrons yet transferred
 #df["dGrxn_regen"] *= -1  # to have a positive trend line, the literature uses R --> R-OH, the reverse of the last step
@@ -71,10 +72,12 @@ df = pd.concat([df_ngcc[save_columns], df_cycleFe[save_columns]])
 print(df)
 #ax = plt.plot([-2,3], [1.2,6.2])
 
+df.replace({"Catalyst":{"tetry-17":"C-1", "tetry-20":"C-2", "tetrid":"B", "mepyr":"A"}}, inplace=True)
+
 #sns.scatterplot(data=df, x="dGrxn_regen", y="dGrxn_O2H", hue="Catalyst", legend="brief", s=50)
-sns.scatterplot(data=df, x="dGrxn_regen", y="dGrxn_O2H", hue="Catalyst", legend="brief", s=50)
+sns.scatterplot(data=df, x="dGrxn_regen", y="dGrxn_O2H", hue_order=["A","B","C-1","C-2"], hue="Catalyst", legend="brief", s=50)
 sns.scatterplot(data=norsk, x="OH", y="OOH", color="black", s=50, label="111 Metals")
-plt.ylabel(r"$\Delta G_{OOH}$")
+plt.ylabel(r"$\Delta G_{O_{2}H}$")
 plt.xlabel(r"$\Delta G_{OH}$")
 # if we would prefer to have access to the plot as a variable:
 #ax = sns.scatterplot(data=df, x="dGrxn_regen", y="dGrxn_O2H", hue="Catalyst", legend="brief", s=50)
